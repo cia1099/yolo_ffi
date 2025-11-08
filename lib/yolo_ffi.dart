@@ -1,10 +1,10 @@
-
 import 'dart:ffi';
 import 'dart:io';
+
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import 'yolo_ffi_bindings_generated.dart';
 
@@ -36,7 +36,9 @@ Future<void> loadModel(String assetPath) async {
 
   // Copy asset to temporary file.
   final byteData = await rootBundle.load(assetPath);
-  await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+  await file.writeAsBytes(
+    byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
+  );
 
   // Load the model from the temporary file path.
   loadModelFromPath(tempPath);
@@ -54,7 +56,9 @@ String getModelInputName() {
   final inputNamePtr = _bindings.get_model_input_name();
 
   if (inputNamePtr == nullptr) {
-    throw StateError("Failed to get input name. Ensure a model is loaded and valid.");
+    throw StateError(
+      "Failed to get input name. Ensure a model is loaded and valid.",
+    );
   }
 
   try {
@@ -68,4 +72,3 @@ String getModelInputName() {
 void closeModel() {
   _bindings.close_model();
 }
-

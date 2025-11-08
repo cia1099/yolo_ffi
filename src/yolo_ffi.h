@@ -10,17 +10,17 @@
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-FFI_PLUGIN_EXPORT void load_model(const char* model_path);
-FFI_PLUGIN_EXPORT const char* get_model_input_name();
-FFI_PLUGIN_EXPORT void free_string(const char* str);
-FFI_PLUGIN_EXPORT void close_model();
+    FFI_PLUGIN_EXPORT void load_model(const char *model_path);
+    FFI_PLUGIN_EXPORT const char *get_model_input_name();
+    FFI_PLUGIN_EXPORT void free_string(const char *str);
+    FFI_PLUGIN_EXPORT void close_model();
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif // YOLO_FFI_H
-

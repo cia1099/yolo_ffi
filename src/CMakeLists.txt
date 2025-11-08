@@ -15,7 +15,7 @@ endif()
 find_package(onnxruntime REQUIRED)
 
 add_library(yolo_ffi SHARED
-  "yolo_ffi.c"
+  "yolo_ffi.cpp"
   "yolo_onnx.cpp"
 )
 
