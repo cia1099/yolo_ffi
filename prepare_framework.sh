@@ -14,12 +14,12 @@ SIMULATOR_BUILD_DIR="$BUILD_DIR/simulator"
 SIMULATOR_ARCH="arm64" # For Intel Macs. Use "arm64" for Apple Silicon Macs.
 
 echo "🚀 Starting build for iOS Simulator ($SIMULATOR_ARCH)..."
+rm -rf build
 
 cmake -S "$SRC_DIR" -B "$SIMULATOR_BUILD_DIR" -G Xcode \
   -DCMAKE_OSX_SYSROOT=$(xcode-select -p)/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk \
   -DCMAKE_OSX_DEPLOYMENT_TARGET="$TARGET_OS" \
-  -DCMAKE_OSX_ARCHITECTURES="$SIMULATOR_ARCH" \
-  -DCMAKE_BUILD_TYPE=Release
+  -DCMAKE_OSX_ARCHITECTURES="$SIMULATOR_ARCH"
 
 cmake --build "$SIMULATOR_BUILD_DIR" --config Release
 echo "✅ Build for iOS Simulator complete."
@@ -35,9 +35,8 @@ echo "✅ Build for iOS Simulator complete."
 # cmake -S "$SRC_DIR" -B "$DEVICE_BUILD_DIR" -G Xcode \
 #   -DCMAKE_OSX_SYSROOT=$(xcode-select -p)/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk \
 #   -DCMAKE_OSX_DEPLOYMENT_TARGET="$TARGET_OS" \
-#   -DCMAKE_OSX_ARCHITECTURES="$DEVICE_ARCH" \
-#   -DCMAKE_BUILD_TYPE=Release
-#
+#   -DCMAKE_OSX_ARCHITECTURES="$DEVICE_ARCH"
+
 # cmake --build "$DEVICE_BUILD_DIR" --config Release
 # echo "✅ Build for iOS Device complete."
 
