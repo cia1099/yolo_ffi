@@ -1,6 +1,6 @@
 # yolo_ffi
 
-### Normal issues
+## Common issues
 * `extern "C"`: 只能作用在`.cpp`文件，这本来就是给C++的声明，让C能够识别
 
 * 用Flutter建制安卓App，会将的C++库存在`build/app/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a`，可以在这个文件夹下检查`extern "C"`是否有成功签署，让ffi可以识别这个函数:
@@ -15,6 +15,8 @@ nm ios/Frameworks/yolo_ffi.framework/yolo_ffi
 * NDK资料夹下没有`libc++_shared.so`。烧录到**虚拟机**后可能链接不到，所以建库的时候不要选`-DANDROID_STL=c++_shared`。 如果是烧录到**实体手机**，是可以加上`-DANDROID_STL=c++_shared`参数。
 
 * 编译OpenCV时，设定CMake参数`-DWITH_ADE=OFF`避免额外建制第3方库`libade.a`；`-DWITH_CAROTENE=OFF`避免第3方库`libtegra_hal.a`，通常只有在为Tegra设备（如Jetson系列）定制时才需要，绝大多数通用安卓或其他平台项目都不需要它。
+
+* 千万不要编译`opencv_world`，因为那会附加很多不必要的库，例如highgui(GUI库)，所以如果追求最小化包体积，就只选必要的库编译。
 
 ## Getting Started
 ### Build iOS
@@ -176,5 +178,9 @@ To use the native code, bindings in Dart are needed.
 To avoid writing these by hand, they are generated from the header file
 (`src/yolo_ffi.h`) by `package:ffigen`.
 Regenerate the bindings by running `dart run ffigen --config ffigen.yaml`.
+
+
+
+
 
 
