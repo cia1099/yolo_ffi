@@ -46,6 +46,7 @@ cmake -DCMAKE_OSX_ARCHITECTURES=arm64 \
 -DWITH_IPP=OFF -DWITH_TBB=OFF -DWITH_ITT=OFF \
 -DBUILD_opencv_gapi=OFF -DWITH_ADE=OFF -DWITH_CAROTENE=OFF \
 -DBUILD_DOCS=OFF -DWITH_PROTOBUF=OFF -DWITH_FLATBUFFERS=OFF  -DWITH_IPP=OFF -DWITH_TBB=OFF -DWITH_OPENCL=OFF -DWITH_CUDA=OFF \
+-DWITH_EIGEN=OFF \
 -S. -Bbuild -GXcode && cmake --build build --config Release -t install -j$(nproc)
 
 # -DBUILD_EXAMPLES=OFF \
@@ -55,7 +56,29 @@ cmake -DCMAKE_OSX_ARCHITECTURES=arm64 \
 # -DBUILD_opencv_js=OFF -DBUILD_opencv_objc=OFF -DBUILD_opencv_java=OFF -DBUILD_opencv_gapi=OFF -DBUILD_opencv_imgcodecs=OFF \
 # -DWITH_IPP=OFF -DWITH_TBB=OFF -DWITH_OPENCL=OFF -DWITH_CUDA=OFF -DWITH_JAVA=OFF \
 ```
-在iOS下，要编译为静态库，这样在链接opencv库的时候才不会报错。（onnxruntime可以是动态库，不知道为啥，微软就是屌）
+在iOS下，要编译为静态库，这样在链接opencv库的时候才不会报错。（onnxruntime可以是动态库，不知道为啥，微软就是屌），在苹果系统里，要链接动态库，会需要动态库的开发者签名才能链接，这也是为什么大多人都编译静态库，省得操心。因为是独立文件，会在 app 包内存在，Apple 要求每个可执行二进制都签名。
+* 查看开发者签名：
+```sh
+security find-identity -v -p codesigning
+# 签名
+codesign --force --sign - path/to/libopencv_world.dylib
+
+CODESIGN_IDENTITY="Apple Distribution: Otto Lin (ABCDE12345)"
+codesign --force --sign $CODESIGN_IDENTITY path/to/libopencv_world.dylib
+```
+1. `--sign -`只能ad-hoc
+2. 实际签署开发者才能用在生产
+
+| 类型                     | 用途                                   |
+| ---------------------- | ------------------------------------ |
+| **Apple Development**  | 用于开发与测试签名（真机/模拟器都行）                  |
+| **Apple Distribution** | 用于 App Store / TestFlight / AdHoc 发布 |
+
+
+* 签名验证：
+```sh
+codesign -dvvv libopencv_dnn.dylib
+```
 
 * Android
 ```sh
@@ -73,7 +96,7 @@ cmake -DCMAKE_OSX_ARCHITECTURES=arm64 \
 -DBUILD_ZLIB=OFF -DBUILD_OPENJPEG=OFF -DWITH_JASPER=OFF \
 -DWITH_IPP=OFF -DWITH_TBB=OFF -DWITH_ITT=OFF \
 -DBUILD_opencv_gapi=OFF -DWITH_ADE=OFF -DWITH_CAROTENE=OFF \
--DBUILD_DOCS=OFF -DWITH_PROTOBUF=OFF -DWITH_FLATBUFFERS=OFF -DWITH_OPENCL=OFF \
+-DBUILD_DOCS=OFF -DWITH_PROTOBUF=OFF -DWITH_FLATBUFFERS=OFF -DWITH_OPENCL=OFF -DWITH_EIGEN=OFF \
 -S. -Bbuild -GNinja && cmake --build build --config Release -t install -j$(nproc)
 
 # -DANDROID_STL=c++_shared \ #For real devices

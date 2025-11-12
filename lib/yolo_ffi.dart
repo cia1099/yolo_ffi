@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:ffi';
+import 'dart:ffi' hide Size;
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -206,10 +206,11 @@ Future<ui.Image> convertImage({
     try {
       final bytes = Uint8List.fromList(buffer.asTypedList(width * height * 4));
       final Completer<ui.Image> completer = Completer();
+      //There is a rotation of 90 degree on Android platform
       ui.decodeImageFromPixels(
         bytes,
-        width,
-        height,
+        isAndroid ? height : width,
+        isAndroid ? width : height,
         ui.PixelFormat.rgba8888,
         (ui.Image img) => completer.complete(img),
       );

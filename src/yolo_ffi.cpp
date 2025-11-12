@@ -86,7 +86,7 @@ FFI_PLUGIN_EXPORT uint8_t* convert_image(
     int width,
     int height,
     bool isAndroid) {
-	cv::Mat rgba_image;
+	cv::Mat rgba_image = cv::Mat4b::zeros(height, width);
 
 	switch (format) {
 		case YUV420: {

@@ -3,7 +3,7 @@
 # the plugin to fail to compile for some customers of the plugin.
 cmake_minimum_required(VERSION 3.10)
 
-project(yolo_ffi_library VERSION 0.0.1 LANGUAGES CXX)
+project(yolo_ffi_library VERSION 0.1.0 LANGUAGES CXX)
 
 # Set the onnxruntime_DIR to point directly to the package config files
 if(ANDROID)
@@ -13,7 +13,6 @@ if(ANDROID)
 elseif(APPLE OR IOS)
     set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../ort/ios/lib/cmake/onnxruntime)
     # set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../opencv/ios/lib/cmake/opencv4)
-    set(EIGEN3_DIR ${CMAKE_SOURCE_DIR}/../eigen/cmake)
     set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../../opencv/ios/lib/cmake/opencv4)
 endif()
 
