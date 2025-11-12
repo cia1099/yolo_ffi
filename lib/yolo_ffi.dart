@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -147,4 +149,74 @@ String getModelInputName() {
 
 void closeModel() {
   _bindings.close_model();
+}
+
+Future<ui.Image> convertImage({
+  required int cameraFormat,
+  required Uint8List plane0,
+  Uint8List? plane1,
+  Uint8List? plane2,
+  required int bytesPerRow0,
+  int bytesPerRow1 = 0,
+  int bytesPerRow2 = 0,
+  int bytesPerPixel1 = 0,
+  int bytesPerPixel2 = 0,
+  required int width,
+  required int height,
+  bool isAndroid = false,
+}) async {
+  return using((Arena arena) {
+    final plane0Ptr = arena<Uint8>(plane0.length);
+    plane0Ptr.asTypedList(plane0.length).setAll(0, plane0);
+
+    Pointer<Uint8> plane1Ptr = nullptr;
+    if (plane1 != null) {
+      plane1Ptr = arena<Uint8>(plane1.length);
+      plane1Ptr.asTypedList(plane1.length).setAll(0, plane1);
+    }
+
+    Pointer<Uint8> plane2Ptr = nullptr;
+    if (plane2 != null) {
+      plane2Ptr = arena<Uint8>(plane2.length);
+      plane2Ptr.asTypedList(plane2.length).setAll(0, plane2);
+    }
+
+    final format = switch (cameraFormat) {
+      1 => ImageFormat.YUV420,
+      2 => ImageFormat.BGRA8888,
+      4 => ImageFormat.NV21,
+      _ => throw ArgumentError("Unknown camera format: $cameraFormat"),
+    };
+
+    final buffer = _bindings.convert_image(
+      format,
+      plane0Ptr,
+      plane1Ptr,
+      plane2Ptr,
+      bytesPerRow0,
+      bytesPerRow1,
+      bytesPerRow2,
+      bytesPerPixel1,
+      bytesPerPixel2,
+      width,
+      height,
+      isAndroid,
+    );
+
+    try {
+      final bytes = Uint8List.fromList(buffer.asTypedList(width * height * 4));
+      final Completer<ui.Image> completer = Completer();
+      ui.decodeImageFromPixels(
+        bytes,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        (ui.Image img) => completer.complete(img),
+      );
+
+      return completer.future;
+    } finally {
+      _bindings.free_rgba_buffer(buffer);
+    }
+  });
 }

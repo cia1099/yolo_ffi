@@ -106,6 +106,10 @@ cmake --build build --config Release -t install -j$(nproc)
 --cmake_extra_defines CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_INSTALL_PREFIX=$PWD/android \
 --android_abi arm64-v8a --android_api 35
 ```
+---
+
+### FFI tutorial
+* [official](https://dart.dev/interop/c-interop)
 
 ---
 This project is a starting point for a Flutter
