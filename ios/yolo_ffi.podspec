@@ -19,11 +19,11 @@ A new Flutter FFI plugin project.
   # `../src/*` so that the C sources can be shared among all target platforms.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
-  s.vendored_frameworks = 'Frameworks/yolo_ffi.framework'
+  s.vendored_frameworks = 'Frameworks/yolo_ffi.xcframework'
   s.prepare_command = 'sh ../prepare_framework.sh'
 
   s.dependency 'Flutter'
-  s.platform = :ios, '16.0'
+  s.platform = :ios, '13.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

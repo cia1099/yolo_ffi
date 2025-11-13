@@ -30,15 +30,15 @@ grep -r "Eigen3" build/CMakeCache.txt
 cmake -DCMAKE_OSX_ARCHITECTURES=arm64 \
 -DCMAKE_INSTALL_PREFIX=$(pwd)/install \
 -DCMAKE_OSX_SYSROOT=$(xcode-select -p)/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk \
--DCMAKE_OSX_DEPLOYMENT_TARGET=16.0 \
+-DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
 -Ssrc -Bbuild -GXcode
 ```
 
 ### Build opencv
-* iOS
+* iOS Simulator
 ```sh
 cmake -DCMAKE_OSX_ARCHITECTURES=arm64 \
--DCMAKE_INSTALL_PREFIX=$(pwd)/ios \
+-DCMAKE_INSTALL_PREFIX=$(pwd)/sim_ios \
 -DCMAKE_OSX_SYSROOT=$(xcode-select -p)/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk \
 -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
 -DBUILD_SHARED_LIBS=OFF \
@@ -60,6 +60,27 @@ cmake -DCMAKE_OSX_ARCHITECTURES=arm64 \
 # -DBUILD_opencv_python3=OFF -DBUILD_opencv_python_bindings_generator=OFF \
 # -DBUILD_opencv_js=OFF -DBUILD_opencv_objc=OFF -DBUILD_opencv_java=OFF -DBUILD_opencv_gapi=OFF -DBUILD_opencv_imgcodecs=OFF \
 # -DWITH_IPP=OFF -DWITH_TBB=OFF -DWITH_OPENCL=OFF -DWITH_CUDA=OFF -DWITH_JAVA=OFF \
+```
+* iOS device
+```sh
+cmake -DCMAKE_OSX_ARCHITECTURES=arm64 \
+-DCMAKE_INSTALL_PREFIX=$(pwd)/ios \
+-DCMAKE_OSX_SYSROOT=$(xcode-select -p)/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk \
+-DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+-DBUILD_SHARED_LIBS=OFF \
+-DCMAKE_BUILD_TYPE=Release \
+-DCMAKE_CXX_STANDARD=17 \
+-DBUILD_LIST=core,imgproc,dnn \
+-DWITH_JPEG=OFF -DWITH_PNG=OFF -DWITH_WEBP=OFF -DWITH_OPENJPEG=OFF \
+-DWITH_OPENEXR=OFF -DWITH_AVFOUNDATION=OFF -DWITH_TIFF=OFF -DWITH_WEBP=OFF \
+-DBUILD_ZLIB=OFF -DBUILD_OPENJPEG=OFF -DWITH_JASPER=OFF -DBUILD_opencv_apps=OFF \
+-DWITH_IPP=OFF -DWITH_TBB=OFF -DWITH_ITT=OFF \
+-DBUILD_opencv_gapi=OFF -DWITH_ADE=OFF -DWITH_CAROTENE=OFF \
+-DBUILD_DOCS=OFF -DWITH_PROTOBUF=OFF -DWITH_FLATBUFFERS=OFF  -DWITH_IPP=OFF -DWITH_TBB=OFF -DWITH_OPENCL=OFF -DWITH_CUDA=OFF -DWITH_EIGEN=OFF \
+-DENABLE_APPLE_SIGNING=OFF \
+-DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
+-DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=NO \
+-S. -Bbuild -GXcode && cmake --build build --config Release -t install -j$(nproc)
 ```
 在iOS下，要编译为静态库，这样在链接opencv库的时候才不会报错。（onnxruntime可以是动态库，不知道为啥，微软就是屌），在苹果系统里，要链接动态库，会需要动态库的开发者签名才能链接，这也是为什么大多人都编译静态库，省得操心。因为是独立文件，会在 app 包内存在，Apple 要求每个可执行二进制都签名。
 * 查看开发者签名：
@@ -123,8 +144,15 @@ cmake --build build --config Release -t install -j$(nproc)
 ```sh
 ./build.sh --config Release --use_xcode \
 --use_coreml --parallel \
+--cmake_extra_defines CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_INSTALL_PREFIX=$PWD/sim_ios \
+--ios --apple_sysroot iphonesimulator --osx_arch arm64 --apple_deploy_target 13
+# iphoneos
+./build.sh --config Release --use_xcode \
+--use_coreml --parallel \
 --cmake_extra_defines CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_INSTALL_PREFIX=$PWD/ios \
---ios --apple_sysroot iphonesimulator --osx_arch arm64 --apple_deploy_target 16
+--ios --apple_sysroot iphoneos --osx_arch arm64 --apple_deploy_target 13
+# install
+cmake --install build/MacOS/Release
 ```
 * android for onnxruntime
 ```sh
