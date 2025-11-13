@@ -38,8 +38,8 @@ FFI_PLUGIN_EXPORT DetectionResult yolo_detect(uint8_t* image_data, int height, i
 	for (int i = 0; i < num_detections; ++i) {
 		bboxes[i * 6 + 0] = detections[i].box.x;
 		bboxes[i * 6 + 1] = detections[i].box.y;
-		bboxes[i * 6 + 2] = detections[i].box.width;
-		bboxes[i * 6 + 3] = detections[i].box.height;
+		bboxes[i * 6 + 2] = detections[i].box.br().x;
+		bboxes[i * 6 + 3] = detections[i].box.br().y;
 		bboxes[i * 6 + 4] = static_cast<float>(detections[i].class_id);
 		bboxes[i * 6 + 5] = detections[i].confidence;
 	}

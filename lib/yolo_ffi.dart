@@ -30,21 +30,21 @@ final YoloFfiBindings _bindings = YoloFfiBindings(_dylib);
 
 /// Represents a single detected object.
 class BoundingBox {
-  final double x, y, w, h, confidence;
+  final double x1, y1, x2, y2, confidence;
   final int classId;
 
   BoundingBox({
-    required this.x,
-    required this.y,
-    required this.w,
-    required this.h,
+    required this.x1,
+    required this.y1,
+    required this.x2,
+    required this.y2,
     required this.classId,
     required this.confidence,
   });
 
   @override
   String toString() {
-    return 'BoundingBox(x: $x, y: $y, w: $w, h: $h, classId: $classId, confidence: $confidence)';
+    return 'BoundingBox(x: $x1, y: $y1, x2: $x2, y2: $y2, classId: $classId, confidence: $confidence)';
   }
 }
 
@@ -111,10 +111,10 @@ List<BoundingBox> yoloDetect({
           final bbox = result.bboxes + i * 6;
           detections.add(
             BoundingBox(
-              x: bbox[0],
-              y: bbox[1],
-              w: bbox[2],
-              h: bbox[3],
+              x1: bbox[0],
+              y1: bbox[1],
+              x2: bbox[2],
+              y2: bbox[3],
               classId: bbox[4].round(),
               confidence: bbox[5],
             ),

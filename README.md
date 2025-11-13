@@ -18,6 +18,11 @@ nm ios/Frameworks/yolo_ffi.framework/yolo_ffi
 
 * 千万不要编译`opencv_world`，因为那会附加很多不必要的库，例如highgui(GUI库)，所以如果追求最小化包体积，就只选必要的库编译。
 
+* OpenCV里的`CMakeLists.txt`里面，find_package()可能会找到系统安装的依赖库，建立libopencv_xxx.a后引用时，就会发生找不到 include 的路径，因为被莫名依赖到了，也不知道是哪里来的，就被find_package()给找到了，自动被包含进来一起编译。可以检查从哪依赖过来：
+```
+grep -r "Eigen3" build/CMakeCache.txt
+```
+
 ## Getting Started
 ### Build iOS
 已经用`prepare_framework.sh`来脚本编译iOS了，所以不需要再手动编译，将脚本的运行写在`ios/yolo_ffi.podspec`里面，通用其他开发者能够在不同PC上进行编译。

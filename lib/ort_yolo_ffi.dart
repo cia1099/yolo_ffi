@@ -53,4 +53,6 @@ class OrtYoloFfi {
       nmsThreshold: nmsThreshold,
     );
   }
+
+  static const int inputSize = 640;
 }
