@@ -19,7 +19,7 @@ A new Flutter FFI plugin project.
   # `../src/*` so that the C sources can be shared among all target platforms.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
-  s.vendored_frameworks = 'Frameworks/yolo_ffi.xcframework'
+  s.vendored_frameworks = 'Frameworks/yolo_ffi.framework'
   s.prepare_command = 'sh ../prepare_framework.sh'
 
   s.dependency 'Flutter'

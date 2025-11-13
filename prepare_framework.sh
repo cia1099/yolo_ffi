@@ -31,19 +31,19 @@ cmake --build "$SIMULATOR_BUILD_DIR" --config Release
 echo "✅ Build for iOS Simulator complete."
 
 
-# --- Build for iOS Device ---
-DEVICE_BUILD_DIR="$BUILD_DIR/device"
-DEVICE_ARCH="arm64"
+# # --- Build for iOS Device ---
+# DEVICE_BUILD_DIR="$BUILD_DIR/device"
+# DEVICE_ARCH="arm64"
 
-echo "🚀 Starting build for iOS Device ($DEVICE_ARCH)..."
-cmake -S "$SRC_DIR" -B "$DEVICE_BUILD_DIR" -G Xcode \
-  -DCMAKE_SYSTEM_NAME=iOS \
-  -DCMAKE_OSX_SYSROOT=$(xcode-select -p)/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk \
-  -DCMAKE_OSX_DEPLOYMENT_TARGET="$TARGET_OS" \
-  -DCMAKE_OSX_ARCHITECTURES="$DEVICE_ARCH"
+# echo "🚀 Starting build for iOS Device ($DEVICE_ARCH)..."
+# cmake -S "$SRC_DIR" -B "$DEVICE_BUILD_DIR" -G Xcode \
+#   -DCMAKE_SYSTEM_NAME=iOS \
+#   -DCMAKE_OSX_SYSROOT=$(xcode-select -p)/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk \
+#   -DCMAKE_OSX_DEPLOYMENT_TARGET="$TARGET_OS" \
+#   -DCMAKE_OSX_ARCHITECTURES="$DEVICE_ARCH"
 
-cmake --build "$DEVICE_BUILD_DIR" --config Release
-echo "✅ Build for iOS Device complete."
+# cmake --build "$DEVICE_BUILD_DIR" --config Release
+# echo "✅ Build for iOS Device complete."
 
 
 # --- Prepare final destination ---
@@ -52,13 +52,22 @@ mkdir -p "$IOS_FRAMEWORKS_DIR"
 
 
 # --- Create XCFramework ---
-echo "🏗 Creating XCFramework..."
-xcodebuild -create-xcframework \
-    -framework "$SIMULATOR_BUILD_DIR/Release-iphonesimulator/${FRAMEWORK_NAME}.framework" \
-    -framework "$DEVICE_BUILD_DIR/Release-iphoneos/${FRAMEWORK_NAME}.framework" \
-    -output "$IOS_FRAMEWORKS_DIR/${FRAMEWORK_NAME}.xcframework"
+# echo "🏗 Creating XCFramework..."
+# xcodebuild -create-xcframework \
+#     -framework "$SIMULATOR_BUILD_DIR/Release-iphonesimulator/${FRAMEWORK_NAME}.framework" \
+#     -framework "$DEVICE_BUILD_DIR/Release-iphoneos/${FRAMEWORK_NAME}.framework" \
+#     -output "$IOS_FRAMEWORKS_DIR/${FRAMEWORK_NAME}.xcframework"
 
-echo "✅ XCFramework created."
+# echo "✅ XCFramework created."
+
+# --- Copy Simulator Framework (Temporary) ---
+# This step just copies the simulator framework.
+# When you enable the device build, you should replace this with the
+# "Create Universal Framework" section below.
+
+echo "🏗 Copying simulator framework..."
+cp -r "$SIMULATOR_BUILD_DIR/Release-iphonesimulator/${FRAMEWORK_NAME}.framework" "$IOS_FRAMEWORKS_DIR"
+echo "✅ Simulator framework copied."
 
 
 # --- Clean up build directories ---
