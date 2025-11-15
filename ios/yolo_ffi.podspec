@@ -18,9 +18,15 @@ A new Flutter FFI plugin project.
   # paths, so Classes contains a forwarder C file that relatively imports
   # `../src/*` so that the C sources can be shared among all target platforms.
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = [
+  'Classes/**/*', 
+  'lib/libonnxruntime.1.23.2.dylib'
+  ]
   s.vendored_frameworks = 'Frameworks/yolo_ffi.framework'
   s.prepare_command = 'sh ../prepare_framework.sh'
+
+  s.vendored_libraries = 'lib/libonnxruntime.1.23.2.dylib'
+  # ls example/build/ios/iphoneos/Runner.app/Frameworks # Check the .dylib in here.
 
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'

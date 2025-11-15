@@ -42,6 +42,7 @@ if(APPLE OR IOS)
   set_target_properties(yolo_ffi PROPERTIES
     FRAMEWORK TRUE
     MACOSX_FRAMEWORK_IDENTIFIER "com.cia1099.yoloffi"
+    INSTALL_RPATH "@rpath"
   )
 endif()
 
