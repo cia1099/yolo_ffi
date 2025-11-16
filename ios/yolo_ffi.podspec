@@ -20,18 +20,36 @@ A new Flutter FFI plugin project.
   s.source           = { :path => '.' }
   s.source_files = [
   'Classes/**/*', 
-  'lib/libonnxruntime.1.23.2.dylib'
+  'lib/libonnxruntime.1.23.2.dylib',
+  # 'lib/libyolo_ffi.a'
   ]
   s.vendored_frameworks = 'Frameworks/yolo_ffi.framework'
   s.prepare_command = 'sh ../prepare_framework.sh'
 
-  s.vendored_libraries = 'lib/libonnxruntime.1.23.2.dylib'
+  # s.static_framework = true
+  s.public_header_files = [
+    'Classes/**/*.h',
+  ]
+  s.vendored_libraries = [
+    'lib/libonnxruntime.1.23.2.dylib',
+    # 'lib/libyolo_ffi.a'
+  ]
   # ls example/build/ios/iphoneos/Runner.app/Frameworks # Check the .dylib in here.
 
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
 
   # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.pod_target_xcconfig = { 
+    'DEFINES_MODULE' => 'YES', 
+    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
+    # 'DEAD_CODE_STRIPPING' => 'NO',
+    # "OTHER_LDFLAGS" => "-force_load $(PODS_TARGET_SRCROOT)/Frameworks/yolo_ffi.framework/yolo_ffi",
+    'STRIP_STYLE' => 'non-global',
+    # 'OTHER_CFLAGS' => '-fvisibility=default',
+    # 'OTHER_CPLUSPLUSFLAGS' => '-fvisibility=default',
+    # 'GCC_SYMBOLS_PRIVATE_EXTERN' => 'NO',
+    # 'STRIP_DEBUG_SYMBOLS_DURING_COPY' => 'NO'
+  }
   s.swift_version = '5.0'
 end

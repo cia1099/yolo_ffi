@@ -1,13 +1,13 @@
 #ifndef YOLO_FFI_H
 #define YOLO_FFI_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #if defined(_WIN32)
 #define FFI_PLUGIN_EXPORT __declspec(dllexport)
 #else
-#define FFI_PLUGIN_EXPORT
+#define FFI_PLUGIN_EXPORT __attribute__((visibility("default"))) __attribute__((used))
 #endif
 
 // Forward declare the session container struct.

@@ -142,13 +142,13 @@ cmake --build build --config Release -t install -j$(nproc)
 
 * iphone simulator for onnxruntime
 ```sh
-./build.sh --config Release --use_xcode \
---use_coreml --parallel \
+./build.sh --config Release --use_xcode --parallel \
+--minimal_build extended --use_coreml \
 --cmake_extra_defines CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_INSTALL_PREFIX=$PWD/sim_ios \
 --ios --apple_sysroot iphonesimulator --osx_arch arm64 --apple_deploy_target 13
 # iphoneos
-./build.sh --config Release --use_xcode \
---use_coreml --parallel \
+./build.sh --config Release --use_xcode --parallel \
+--minimal_build extended --use_coreml \
 --cmake_extra_defines CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_INSTALL_PREFIX=$PWD/ios \
 --ios --apple_sysroot iphoneos --osx_arch arm64 --apple_deploy_target 13
 # install
@@ -158,7 +158,8 @@ cmake --install build/MacOS/Release
 ```sh
 ./build.sh --android --android_sdk_path /Users/otto/Library/Android/sdk \
 --android_ndk_path /Users/otto/Library/Android/sdk/ndk/28.0.12674087 \
---config Release --build_shared_lib --parallel --use_nnapi \
+--config Release --build_shared_lib --parallel \
+--minimal_build extended --use_nnapi --disable_ml_ops --disable_exceptions --skip_tests \
 --cmake_extra_defines CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_INSTALL_PREFIX=$PWD/android \
 --android_abi arm64-v8a --android_api 35
 ```
@@ -238,6 +239,7 @@ To use the native code, bindings in Dart are needed.
 To avoid writing these by hand, they are generated from the header file
 (`src/yolo_ffi.h`) by `package:ffigen`.
 Regenerate the bindings by running `dart run ffigen --config ffigen.yaml`.
+
 
 
 

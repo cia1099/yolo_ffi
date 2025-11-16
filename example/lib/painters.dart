@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -17,16 +18,16 @@ class CameraPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.save();
 
-    // if (isAndroid) {
-    //   // 移动画布原点到中心（旋转围绕中心）
-    //   canvas.translate(size.width / 2, size.height / 2);
+    if (isAndroid) {
+      // 移动画布原点到中心（旋转围绕中心）
+      canvas.translate(size.width / 2, size.height / 2);
 
-    //   // 旋转 90°（顺时针为正，逆时针传负值）
-    //   canvas.rotate((camera?.sensorOrientation ?? 90) * math.pi / 180);
+      // 旋转 90°（顺时针为正，逆时针传负值）
+      canvas.rotate(90 * math.pi / 180);
 
-    //   // 再把坐标系移回去（因为前面移动了中心）
-    //   canvas.translate(-size.height / 2, -size.width / 2);
-    // }
+      // 再把坐标系移回去（因为前面移动了中心）
+      canvas.translate(-size.height / 2, -size.width / 2);
+    }
 
     final srcRect = Rect.fromLTWH(
       0,
@@ -35,7 +36,6 @@ class CameraPainter extends CustomPainter {
       frame.height.toDouble(),
     );
 
-    // 注意：此时宽高对调，因为旋转 90° 后，w/h 会交换
     final dstRect = Rect.fromLTWH(
       0,
       0,

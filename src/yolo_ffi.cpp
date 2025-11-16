@@ -6,7 +6,6 @@
 static struct OrtSessionContainer* session_container = nullptr;
 
 extern "C" {
-
 FFI_PLUGIN_EXPORT void load_model(const char* model_path) {
 	// If a model is already loaded, close it before loading a new one.
 	if (session_container) {

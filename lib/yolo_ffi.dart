@@ -16,6 +16,7 @@ const String _libName = 'yolo_ffi';
 final DynamicLibrary _dylib = () {
   if (Platform.isMacOS || Platform.isIOS) {
     return DynamicLibrary.open('$_libName.framework/$_libName');
+    // return DynamicLibrary.process();
   }
   if (Platform.isAndroid || Platform.isLinux) {
     return DynamicLibrary.open('lib$_libName.so');
@@ -157,10 +158,10 @@ Future<ui.Image> convertImage({
   Uint8List? plane1,
   Uint8List? plane2,
   required int bytesPerRow0,
-  int bytesPerRow1 = 0,
-  int bytesPerRow2 = 0,
-  int bytesPerPixel1 = 0,
-  int bytesPerPixel2 = 0,
+  int? bytesPerRow1,
+  int? bytesPerRow2,
+  int? bytesPerPixel1,
+  int? bytesPerPixel2,
   required int width,
   required int height,
   bool isAndroid = false,
@@ -194,10 +195,10 @@ Future<ui.Image> convertImage({
       plane1Ptr,
       plane2Ptr,
       bytesPerRow0,
-      bytesPerRow1,
-      bytesPerRow2,
-      bytesPerPixel1,
-      bytesPerPixel2,
+      bytesPerRow1 ?? 0,
+      bytesPerRow2 ?? 0,
+      bytesPerPixel1 ?? 0,
+      bytesPerPixel2 ?? 0,
       width,
       height,
       isAndroid,

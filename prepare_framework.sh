@@ -43,7 +43,7 @@ cmake -S "$SRC_DIR" -B "$DEVICE_BUILD_DIR" -G Xcode \
   -DCMAKE_OSX_ARCHITECTURES="$DEVICE_ARCH"
 
 cmake --build "$DEVICE_BUILD_DIR" --config Release
-# echo "✅ Build for iOS Device complete."
+echo "✅ Build for iOS Device complete."
 
 
 # --- Prepare final destination ---
