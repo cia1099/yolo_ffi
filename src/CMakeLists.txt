@@ -25,7 +25,7 @@ endif()
 find_package(onnxruntime REQUIRED)
 find_package(OpenCV REQUIRED)
 
-add_library(yolo_ffi SHARED
+add_library(yolo_ffi #SHARED
   "yolo_ffi.cpp"
   "yolo_onnx.cpp"
 )
@@ -42,16 +42,16 @@ if(APPLE OR IOS)
   set_target_properties(yolo_ffi PROPERTIES
     PUBLIC_HEADER yolo_ffi.h
     OUTPUT_NAME "yolo_ffi"
-    FRAMEWORK TRUE
-    MACOSX_FRAMEWORK_IDENTIFIER "com.cia1099.yolo_ffi"
-    INSTALL_RPATH "@rpath"
+    # FRAMEWORK TRUE
+    MACOSX_FRAMEWORK_IDENTIFIER "com.cia1099.yoloFfi"
+    # INSTALL_RPATH "@rpath"
     # avoid symbol strip
     # MACH_O_TYPE "mh_dylib"
-    XCODE_ATTRIBUTE_DEAD_CODE_STRIPPING "NO"
-    XCODE_ATTRIBUTE_STRIP_STYLE "non-global"
-    XCODE_ATTRIBUTE_STRIP_INSTALLED_PRODUCT "NO"
-    XCODE_ATTRIBUTE_ENABLE_BITCODE "NO"  # 若 iOS >= 15 可省略
-    XCODE_ATTRIBUTE_GCC_SYMBOLS_PRIVATE_EXTERN "NO"
+    # XCODE_ATTRIBUTE_DEAD_CODE_STRIPPING "NO"
+    # XCODE_ATTRIBUTE_STRIP_STYLE "non-global"
+    # XCODE_ATTRIBUTE_STRIP_INSTALLED_PRODUCT "NO"
+    # XCODE_ATTRIBUTE_ENABLE_BITCODE "NO"  # 若 iOS >= 15 可省略
+    # XCODE_ATTRIBUTE_GCC_SYMBOLS_PRIVATE_EXTERN "NO"
   )
 endif()
 

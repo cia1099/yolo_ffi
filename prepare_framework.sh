@@ -46,6 +46,18 @@ cmake --build "$DEVICE_BUILD_DIR" --config Release
 echo "✅ Build for iOS Device complete."
 
 
+# --- Merge OpenCV libs ---
+echo "🦾 Merging OpenCV libraries..."
+python3 opencv_objs.py "$DEVICE_BUILD_DIR/Release-iphoneos/libyolo_ffi.a"
+echo "✅ OpenCV libraries merged into libyolo_ffi.a."
+
+# --- Copy merged library to ios/lib ---
+echo "📦 Copying merged library to ios/lib..."
+mkdir -p "ios/lib"
+cp "$DEVICE_BUILD_DIR/Release-iphoneos/libyolo_ffi.a" "ios/lib/libyolo_ffi.a"
+echo "✅ Merged library copied."
+
+
 # --- Prepare final destination ---
 echo "📦 Preparing destination directory: $IOS_FRAMEWORKS_DIR"
 mkdir -p "$IOS_FRAMEWORKS_DIR"
@@ -54,9 +66,9 @@ mkdir -p "$IOS_FRAMEWORKS_DIR"
 # cp -r "$SIMULATOR_BUILD_DIR/Release-iphonesimulator/${FRAMEWORK_NAME}.framework" "$IOS_FRAMEWORKS_DIR"
 # echo "✅ Simulator framework copied."
 
-echo "🏗 Copying real device framework..."
-cp -r "$DEVICE_BUILD_DIR/Release-iphoneos/${FRAMEWORK_NAME}.framework" "$IOS_FRAMEWORKS_DIR"
-echo "✅ Device framework copied."
+# echo "🏗 Copying real device framework..."
+# cp -r "$DEVICE_BUILD_DIR/Release-iphoneos/${FRAMEWORK_NAME}.framework" "$IOS_FRAMEWORKS_DIR"
+# echo "✅ Device framework copied."
 
 # --- Create XCFramework ---
 # echo "🏗 Creating XCFramework..."
