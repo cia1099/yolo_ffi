@@ -6,9 +6,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:yolo_ffi/ort_yolo_ffi.dart';
-import 'package:yolo_ffi_example/frosted_button.dart';
-import 'package:yolo_ffi_example/painters.dart';
 
+import 'frosted_button.dart';
+import 'painters.dart';
 import 'yuv2rgba_converter.dart';
 
 class DetectPage extends StatefulWidget {
@@ -34,7 +34,11 @@ class _DetectPageState extends State<DetectPage> {
     }
 
     controller.startImageStream((cameraImage) async {
+      // final sw = Stopwatch()..start();
       final frame = await converter.convert(cameraImage);
+      // await frame.androidResize(frame.width, frame.height);
+      // final dartConvert = (sw..stop()).elapsedMilliseconds;
+      // (sw..reset()).start();
       // final plane0 = cameraImage.planes[0];
       // final plane1 = cameraImage.planes.elementAtOrNull(1);
       // final plane2 = cameraImage.planes.elementAtOrNull(2);
@@ -52,13 +56,21 @@ class _DetectPageState extends State<DetectPage> {
       //   height: cameraImage.height,
       //   isAndroid: isAndroid,
       // );
+      // final ffiConvert = (sw..stop()).elapsedMilliseconds;
+      // print(
+      //   "\x1b[32mDart convert = ${dartConvert}ms, FFI convert = ${ffiConvert}ms\x1b[0m",
+      // );
       streamController.add(frame);
       if (isDetect) {
+        final infSw = Stopwatch()..start();
         if (isAndroid) {
           boxes << await ortYolo(await frame.androidResize(640, 640));
         } else {
           boxes << await ortYolo(frame);
         }
+        debugPrint(
+          "\x1b[32mElapsed time: infer = ${(infSw..stop()).elapsedMilliseconds}ms\x1b[0m",
+        );
       } else if (boxes.isNotEmpty) {
         boxes << [];
       }
@@ -71,7 +83,6 @@ class _DetectPageState extends State<DetectPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(middle: Text("Detecting Object")),
       child: SafeArea(

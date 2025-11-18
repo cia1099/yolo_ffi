@@ -164,7 +164,7 @@ Future<ui.Image> convertImage({
   int? bytesPerPixel2,
   required int width,
   required int height,
-  bool isAndroid = false,
+  required bool isAndroid,
 }) async {
   return using((Arena arena) {
     final plane0Ptr = arena<Uint8>(plane0.length);

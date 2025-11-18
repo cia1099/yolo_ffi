@@ -40,8 +40,10 @@ set_target_properties(yolo_ffi PROPERTIES
 # Used Frameworks to make iOS support multiple Apple devices
 if(APPLE OR IOS)
   set_target_properties(yolo_ffi PROPERTIES
+    PUBLIC_HEADER yolo_ffi.h
+    OUTPUT_NAME "yolo_ffi"
     FRAMEWORK TRUE
-    MACOSX_FRAMEWORK_IDENTIFIER "com.cia1099.yoloffi"
+    MACOSX_FRAMEWORK_IDENTIFIER "com.cia1099.yolo_ffi"
     INSTALL_RPATH "@rpath"
     # avoid symbol strip
     # MACH_O_TYPE "mh_dylib"
