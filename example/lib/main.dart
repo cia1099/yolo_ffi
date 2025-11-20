@@ -2,7 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:statsfl/statsfl.dart';
 import 'package:yolo_ffi/yolo_ffi.dart' as yolo_ffi;
-import 'package:yolo_ffi_example/detect_page.dart';
+
+import 'dev_page.dart';
 
 void main() {
   // It's recommended to call this before runApp to ensure Flutter bindings are initialized.
@@ -14,8 +15,8 @@ void main() {
       child: CupertinoApp(
         debugShowCheckedModeBanner: false,
         // home: const GetInputNamePage(),
-        // home: const DevPage(),
-        home: const CameraPage(),
+        home: const DevPage(),
+        // home: const CameraPage(),
       ),
     ),
   );

@@ -25,7 +25,12 @@ endif()
 find_package(onnxruntime REQUIRED)
 find_package(OpenCV REQUIRED)
 
-add_library(yolo_ffi #SHARED
+if(IOS OR APPLE)
+  set(LIB_TYPE STATIC)
+else()
+  set(LIB_TYPE SHARED)
+endif()
+add_library(yolo_ffi ${LIB_TYPE}
   "yolo_ffi.cpp"
   "yolo_onnx.cpp"
 )

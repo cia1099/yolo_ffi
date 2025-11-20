@@ -22,6 +22,11 @@ nm ios/Frameworks/yolo_ffi.framework/yolo_ffi
 ```
 grep -r "Eigen3" build/CMakeCache.txt
 ```
+* 在`ios/yolo_ffi.podspec`强迫链接库，可以有效解决FFI找不到函数的问题[issue](https://github.com/dart-lang/sdk/issues/44328#issuecomment-855682903)
+```podspec
+s.vendored_libraries = 'lib/libyolo_ffi.a'
+"OTHER_LDFLAGS" => "-force_load $(PODS_TARGET_SRCROOT)/lib/libyolo_ffi.a",
+```
 
 ## Getting Started
 ### Build iOS
@@ -135,8 +140,8 @@ cmake --build build --config Release -t install -j$(nproc)
 
 ### Build and install onnxruntime
 ```sh
- git clone --recursive --depth=1 -b 1.23.2  https://github.com/Microsoft/onnxruntime.git
- cd onnxruntime
+git clone --recursive --depth=1 -b v1.23.2  https://github.com/Microsoft/onnxruntime.git
+cd onnxruntime
 ```
 [Build ONNX Runtime for inference](https://onnxruntime.ai/docs/build/inferencing.html)
 
@@ -148,12 +153,13 @@ cmake --build build --config Release -t install -j$(nproc)
 --ios --apple_sysroot iphonesimulator --osx_arch arm64 --apple_deploy_target 13
 # iphoneos
 ./build.sh --config Release --use_xcode --parallel \
---minimal_build extended --use_coreml \
+--use_coreml --skip_tests \
 --cmake_extra_defines CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_INSTALL_PREFIX=$PWD/ios \
 --ios --apple_sysroot iphoneos --osx_arch arm64 --apple_deploy_target 13
 # install
-cmake --install build/MacOS/Release
+cmake --install build/iOS/Release
 ```
+编译iphoneos的`--minimal_build extended --use_coreml`可能会编译错误，需要最大编译才能编译出ios的库。
 * android for onnxruntime
 ```sh
 ./build.sh --android --android_sdk_path /Users/otto/Library/Android/sdk \

@@ -3,6 +3,9 @@
 #include <opencv2/dnn.hpp>
 #include <vector>
 #include "yolo_ffi.h"
+#if __ANDROID__
+#include <nnapi_provider_factory.h>
+#endif
 
 // Creates and returns a new session container.
 // It is the caller's responsibility to call close_session on the returned pointer.
@@ -12,6 +15,20 @@ OrtSessionContainer* create_session(const char* model_path) {
 
 	Ort::SessionOptions session_options;
 	session_options.SetIntraOpNumThreads(1);
+
+#if __iOS__
+	// Use Core ML execution provider for iOS/macOS.
+	std::unordered_map<std::string, std::string> provider_options;
+	provider_options["ModelFormat"] = "MLProgram";
+	provider_options["MLComputeUnits"] = "ALL";
+	provider_options["RequireStaticInputShapes"] = "0";
+	provider_options["EnableOnSubgraphs"] = "0";
+	session_options.AppendExecutionProvider("CoreML", provider_options);
+#elif __ANDROID__
+	// Use NNAPI execution provider for Android.
+	uint32_t nnapi_flags = 0;  // NNAPI_FLAG_CPU_DISABLED;
+	Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(session_options, nnapi_flags));
+#endif
 
 	try {
 		container->session = new Ort::Session(*container->env, model_path, session_options);
