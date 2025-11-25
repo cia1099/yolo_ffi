@@ -4,6 +4,7 @@ group = "com.cia1099.yolo_ffi"
 version = "1.0"
 
 buildscript {
+    ext.kotlin_version = '1.9.20'
     repositories {
         google()
         mavenCentral()
@@ -12,6 +13,7 @@ buildscript {
     dependencies {
         // The Android Gradle Plugin knows how to build native code with the NDK.
         classpath("com.android.tools.build:gradle:8.9.1")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     }
 }
 
@@ -23,6 +25,7 @@ rootProject.allprojects {
 }
 
 apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
 
 android {
     namespace = "com.cia1099.yolo_ffi"
@@ -38,6 +41,19 @@ android {
     ndkVersion = "28.0.12674087"
     // ndkVersion = android.ndkVersion
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+    }
+
     // Invoke the shared CMake build with the Android Gradle Plugin.
     externalNativeBuild {
         cmake {
@@ -50,11 +66,6 @@ android {
             // the plugin to fail to compile for some customers of the plugin.
             // version "3.10.2"
         }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
     }
 
     defaultConfig {

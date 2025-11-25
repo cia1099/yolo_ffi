@@ -19,21 +19,21 @@ A new Flutter FFI plugin project.
   # `../src/*` so that the C sources can be shared among all target platforms.
   s.source           = { :path => '.' }
   s.source_files = [
-  'Classes/**/*', 
+  'Classes/**/*',
   'lib/libonnxruntime.1.23.2.dylib'
   ]
-  s.vendored_frameworks = 'Frameworks/yolo_ffi.framework'
+  # s.vendored_frameworks = 'Frameworks/yolo_ffi.framework'
   s.prepare_command = 'sh ../prepare_framework.sh'
 
-  # s.static_framework = true
   s.public_header_files = [
     'Classes/**/*.h',
   ]
+  ## For iOS device
   s.vendored_libraries = [
     'lib/libonnxruntime.1.23.2.dylib',
     'lib/libyolo_ffi.a'
   ]
-  # ls example/build/ios/iphoneos/Runner.app/Frameworks # Check the .dylib in here.
+  ## ls example/build/ios/iphoneos/Runner.app/Frameworks # Check the .dylib in here.
 
   s.dependency 'Flutter'
   s.frameworks = 'Accelerate'

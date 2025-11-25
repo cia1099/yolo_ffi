@@ -41,8 +41,11 @@ flutter:
   plugin:
     platforms:
       android:
+        package: com.cia1099.yolo_ffi
+        pluginClass: YoloFfiPlugin
         ffiPlugin: true
       ios:
+        pluginClass: YoloFfiPlugin
         ffiPlugin: true
 
   # To add assets to your plugin package, add an assets section, like this:

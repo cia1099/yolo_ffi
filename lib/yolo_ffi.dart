@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:ffi/ffi.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show rootBundle, EventChannel;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -221,4 +221,29 @@ Future<ui.Image> convertImage({
       _bindings.free_rgba_buffer(buffer);
     }
   });
+}
+
+// --- EventChannel for Printing ---
+class PlatformChannel {
+  static const EventChannel _printEventChannel = EventChannel(
+    'com.cia1099.yolo_ffi/logging',
+  );
+
+  /// A stream of log messages from the C++ side.
+  ///
+  /// You can listen to this stream to get real-time events and logs
+  /// from the native code.
+  ///
+  /// Example:
+  /// ```dart
+  /// final subscription = cppLogStream.listen((message) {
+  ///   print('Log from C++: $message');
+  /// });
+  ///
+  /// // Don't forget to cancel the subscription when it's no longer needed.
+  /// subscription.cancel();
+  /// ```
+  static Stream<String> get getCppConsole {
+    return _printEventChannel.receiveBroadcastStream().cast<String>();
+  }
 }

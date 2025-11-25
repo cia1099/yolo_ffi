@@ -5,6 +5,10 @@ cmake_minimum_required(VERSION 3.10)
 
 project(yolo_ffi_library VERSION 0.1.0 LANGUAGES CXX)
 
+if(CMAKE_OSX_SYSROOT MATCHES "iphonesimulator")
+    set(SIMULATOR ON)
+endif()
+
 # Set the onnxruntime_DIR to point directly to the package config files
 if(ANDROID)
     set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../../onnxruntime/android/lib/cmake/onnxruntime)
@@ -25,7 +29,7 @@ endif()
 find_package(onnxruntime REQUIRED)
 find_package(OpenCV REQUIRED)
 
-if(IOS OR APPLE)
+if((IOS OR APPLE) AND NOT SIMULATOR)
   set(LIB_TYPE STATIC)
 else()
   set(LIB_TYPE SHARED)
@@ -33,19 +37,20 @@ endif()
 add_library(yolo_ffi ${LIB_TYPE}
   "yolo_ffi.cpp"
   "yolo_onnx.cpp"
+  "print.cpp"
 )
 
 target_link_libraries(yolo_ffi onnxruntime::onnxruntime ${OpenCV_LIBS})
 
 set_target_properties(yolo_ffi PROPERTIES
 # PUBLIC_HEADER "yolo_ffi.h;yolo_onnx.h"
-  PUBLIC_HEADER yolo_ffi.h
+  PUBLIC_HEADER "yolo_ffi.h;print.h"
   OUTPUT_NAME "yolo_ffi"
 )
 # Used Frameworks to make iOS support multiple Apple devices
 if(APPLE OR IOS)
   set_target_properties(yolo_ffi PROPERTIES
-    PUBLIC_HEADER yolo_ffi.h
+    PUBLIC_HEADER "yolo_ffi.h;print.h"
     OUTPUT_NAME "yolo_ffi"
     # FRAMEWORK TRUE
     MACOSX_FRAMEWORK_IDENTIFIER "com.cia1099.yoloFfi"

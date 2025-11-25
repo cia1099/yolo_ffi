@@ -148,7 +148,7 @@ cd onnxruntime
 * iphone simulator for onnxruntime
 ```sh
 ./build.sh --config Release --use_xcode --parallel \
---minimal_build extended --use_coreml \
+--use_coreml --skip_tests \
 --cmake_extra_defines CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_INSTALL_PREFIX=$PWD/sim_ios \
 --ios --apple_sysroot iphonesimulator --osx_arch arm64 --apple_deploy_target 13
 # iphoneos
@@ -165,7 +165,8 @@ cmake --install build/iOS/Release
 ./build.sh --android --android_sdk_path /Users/otto/Library/Android/sdk \
 --android_ndk_path /Users/otto/Library/Android/sdk/ndk/28.0.12674087 \
 --config Release --build_shared_lib --parallel \
---minimal_build extended --use_nnapi --disable_ml_ops --disable_exceptions --skip_tests \
+--minimal_build extended --use_xnnpack --use_nnapi --disable_ml_ops --disable_exceptions --skip_tests \
+--cmake_generator "Ninja" \
 --cmake_extra_defines CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_INSTALL_PREFIX=$PWD/android \
 --android_abi arm64-v8a --android_api 35
 ```
@@ -246,7 +247,15 @@ To avoid writing these by hand, they are generated from the header file
 (`src/yolo_ffi.h`) by `package:ffigen`.
 Regenerate the bindings by running `dart run ffigen --config ffigen.yaml`.
 
+```cpp
+  Ort::SessionOptions session_options;
+  session_options.SetIntraOpNumThreads(1);
+  uint32_t nnapi_flags = 0;  // NNAPI_FLAG_CPU_DISABLED;
+  uint32_t nnapi_flags = NNAPI_FLAG_CPU_ONLY;
+  Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(session_options, nnapi_flags));
+  container->session = new Ort::Session(*container->env, model_path, session_options);
 
+```
 
 
 

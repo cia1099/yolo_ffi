@@ -24,8 +24,7 @@ rm -rf "$IOS_FRAMEWORKS_DIR/${FRAMEWORK_NAME}.framework"
 #   -DCMAKE_SYSTEM_NAME=iOS \
 #   -DCMAKE_OSX_SYSROOT=$(xcode-select -p)/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk \
 #   -DCMAKE_OSX_DEPLOYMENT_TARGET="$TARGET_OS" \
-#   -DCMAKE_OSX_ARCHITECTURES="$SIMULATOR_ARCH" \
-#   -DSIMULATOR=ON
+#   -DCMAKE_OSX_ARCHITECTURES="$SIMULATOR_ARCH"
 
 # cmake --build "$SIMULATOR_BUILD_DIR" --config Release
 # echo "✅ Build for iOS Simulator complete."

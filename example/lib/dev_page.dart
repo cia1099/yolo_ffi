@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:yolo_ffi/ort_yolo_ffi.dart';
+import 'package:yolo_ffi/yolo_ffi.dart';
 
 import 'frosted_button.dart';
 import 'painters.dart';
@@ -25,6 +26,7 @@ class _DevPageState extends State<DevPage> {
     streamController.add(img);
     return img;
   });
+  StreamSubscription? subscription;
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +99,7 @@ class _DevPageState extends State<DevPage> {
   void dispose() {
     ortYolo.dispose();
     timer?.cancel();
+    subscription?.cancel();
     super.dispose();
   }
 
@@ -106,6 +109,9 @@ class _DevPageState extends State<DevPage> {
     await image;
     final documentsDirectory = await getApplicationDocumentsDirectory();
     debugPrint("Application directory: $documentsDirectory");
+    subscription = PlatformChannel.getCppConsole.listen((msg) {
+      debugPrint("\x1b[43m$msg\x1b[0m");
+    });
   }
 }
 

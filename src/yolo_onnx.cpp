@@ -2,9 +2,11 @@
 #include <cstring>  // For strlen and strcpy
 #include <opencv2/dnn.hpp>
 #include <vector>
+#include "print.h"
 #include "yolo_ffi.h"
 #if __ANDROID__
 #include <nnapi_provider_factory.h>
+#include <onnxruntime_session_options_config_keys.h>
 #endif
 
 // Creates and returns a new session container.
@@ -25,9 +27,16 @@ OrtSessionContainer* create_session(const char* model_path) {
 	provider_options["EnableOnSubgraphs"] = "0";
 	session_options.AppendExecutionProvider("CoreML", provider_options);
 #elif __ANDROID__
+	// Use XNNPACK execution provider for Android.
+	// session_options.AddConfigEntry(kOrtSessionOptionsConfigAllowIntraOpSpinning, "0");
+	// std::unordered_map<std::string, std::string> provider_options;
+	// provider_options["intra_op_num_threads"] = "1";
+	// session_options.AppendExecutionProvider("XNNPACK", provider_options);
+
 	// Use NNAPI execution provider for Android.
-	uint32_t nnapi_flags = 0;  // NNAPI_FLAG_CPU_DISABLED;
-	Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(session_options, nnapi_flags));
+	// uint32_t nnapi_flags = 0;  // NNAPI_FLAG_CPU_DISABLED;
+	// uint32_t nnapi_flags = NNAPI_FLAG_CPU_ONLY;
+	// Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(session_options, nnapi_flags));
 #endif
 
 	try {
@@ -37,6 +46,7 @@ OrtSessionContainer* create_session(const char* model_path) {
 		delete container->env;
 		delete container;
 		// Optionally, log the error message e.what()
+		// printf("\x1b[32m%s\x1b[0m", e.what());
 		return nullptr;
 	}
 
@@ -66,6 +76,7 @@ const char* get_input_name(OrtSessionContainer* container) {
 }
 
 std::vector<Detection> run_inference(OrtSessionContainer* container, cv::InputArray image, float conf_threshold, float nms_threshold) {
+	print_message("Running inference...");
 	if (!container || !container->session) {
 		return {};
 	}
