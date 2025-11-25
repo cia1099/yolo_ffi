@@ -10,7 +10,7 @@ import android.os.Looper
 class YoloFfiPlugin : FlutterPlugin, EventChannel.StreamHandler {
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        val channel = EventChannel(flutterPluginBinding.binaryMessenger, "com.cia1099.yolo_ffi/logging")
+        val channel = EventChannel(flutterPluginBinding.binaryMessenger, "com.cia1099.yolo_ffi/print")
         channel.setStreamHandler(this)
 
         // Call the native setup function to pass the class reference to C++

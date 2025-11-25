@@ -226,7 +226,7 @@ Future<ui.Image> convertImage({
 // --- EventChannel for Printing ---
 class PlatformChannel {
   static const EventChannel _printEventChannel = EventChannel(
-    'com.cia1099.yolo_ffi/logging',
+    'com.cia1099.yolo_ffi/print',
   );
 
   /// A stream of log messages from the C++ side.

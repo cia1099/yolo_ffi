@@ -126,8 +126,16 @@ typedef void (*IMP_printMessage)(Class, SEL, const char* message);
  * @param message The string message to send.
  */
 void print_message(const char* message) {
-	// printf("iOS print_message called with: %s\n", message);
 	Class pluginClass = objc_getClass("YoloFfiPlugin");
+
+	SEL selector = sel_registerName("printMessage:");
+
+	IMP_printMessage imp = (IMP_printMessage)method_getImplementation(class_getClassMethod(pluginClass, selector));
+
+	imp(pluginClass, selector, message);
+
+	// MARK:- Debug print
+	// Class pluginClass = objc_getClass("YoloFfiPlugin");
 	// if (!pluginClass) {
 	// 	printf("ERROR: objc_getClass(\"YoloFfiPlugin\") returned nil.\n");
 	// 	return;
@@ -135,13 +143,13 @@ void print_message(const char* message) {
 	// 	printf("SUCCESS: Found class YoloFfiPlugin.\n");
 	// }
 
-	SEL selector = sel_registerName("printMessage:");
+	// SEL selector = sel_registerName("printMessage:");
 	// if (!selector) {
 	// 	printf("ERROR: sel_registerName(\"printMessage:\") returned nil.\n");
 	// 	return;
 	// }
 
-	IMP_printMessage printMessageImp = (IMP_printMessage)method_getImplementation(class_getClassMethod(pluginClass, selector));
+	// IMP_printMessage printMessageImp = (IMP_printMessage)method_getImplementation(class_getClassMethod(pluginClass, selector));
 	// if (!printMessageImp) {
 	// 	printf("ERROR: method_getImplementation for printMessage: returned nil.\n");
 	// 	return;
@@ -149,8 +157,7 @@ void print_message(const char* message) {
 	// 	printf("SUCCESS: Found method implementation for printMessage:.\n");
 	// }
 
-	printMessageImp(pluginClass, selector, message);
-	// printf("iOS print_message finished.\n");
+	// printMessageImp(pluginClass, selector, message);
 }
 
 #endif
