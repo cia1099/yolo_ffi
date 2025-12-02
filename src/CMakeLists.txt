@@ -39,13 +39,14 @@ endif()
 add_library(yolo_ffi ${LIB_TYPE}
   "yolo_ffi.cpp"
   "print.cpp"
-  "onnx_yolo.cpp"
-  "onnx_ffi.cpp"
-  # "ncnn_yolo.cpp"
-  # "ncnn_ffi.cpp"
+  # "onnx_yolo.cpp"
+  # "onnx_ffi.cpp"
+  "ncnn_yolo.cpp"
+  "ncnn_ffi.cpp"
 )
 
-target_link_libraries(yolo_ffi ${OpenCV_LIBS} onnxruntime::onnxruntime)
+# target_link_libraries(yolo_ffi ${OpenCV_LIBS} onnxruntime::onnxruntime)
+target_link_libraries(yolo_ffi ${OpenCV_LIBS} ncnn)
 
 set_target_properties(yolo_ffi PROPERTIES
 # PUBLIC_HEADER "yolo_ffi.h;yolo_onnx.h"

@@ -189,7 +189,8 @@ cmake --build build --config Release -t install -j$(nproc)
 [use ncnn with pytorch or onnx](https://github.com/Tencent/ncnn/wiki/use-ncnn-with-pytorch-or-onnx)
 ```sh
 python3 -c "from ultralytics import YOLO;model = YOLO('yolo11n.pt');model.export(format='torchscript')"
-pnnx yolo11n.torchscript
+pnnx yolo11n.torchscript "inputshape=[1,3,640,640]" ncnnpy=ncnn_example.py
+
 ```
 
 ---

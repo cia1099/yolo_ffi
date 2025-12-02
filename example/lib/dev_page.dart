@@ -81,6 +81,7 @@ class _DevPageState extends State<DevPage> {
                 timer?.cancel();
                 final sw = Stopwatch()..start();
                 boxes << await ortYolo(await image);
+                // print("\x1b[43mDetect objects: ${boxes.length}\x1b[0m");
                 debugPrint(
                   "Elapsed time: ${(sw..stop()).elapsedMilliseconds}ms",
                 );

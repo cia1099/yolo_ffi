@@ -68,6 +68,27 @@ Future<void> loadModel(String assetPath) async {
   loadModelFromPath(tempPath);
 }
 
+/// Loads an ncnn model from an asset path.
+Future<void> loadNcnnModel(String assetPath) async {
+  final tempDir = await getTemporaryDirectory();
+
+  final paramPath = p.join(tempDir.path, "${p.basename(assetPath)}.param");
+  var file = File(paramPath);
+  var byteData = await rootBundle.load("$assetPath.param");
+  await file.writeAsBytes(
+    byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
+  );
+  final modelPath = p.join(tempDir.path, "${p.basename(assetPath)}.bin");
+  file = File(modelPath);
+  byteData = await rootBundle.load("$assetPath.bin");
+  await file.writeAsBytes(
+    byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
+  );
+
+  // Load the model from the temporary file path.
+  loadModelFromPath(p.withoutExtension(modelPath));
+}
+
 /// Loads an ONNX model from a file path.
 void loadModelFromPath(String modelPath) {
   using((Arena arena) {

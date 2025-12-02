@@ -16,7 +16,8 @@ class OrtYoloFfi {
 
   Future<void> _init() async {
     try {
-      await loadModel('packages/yolo_ffi/assets/yolo11n.ort');
+      // await loadModel('packages/yolo_ffi/assets/yolo11n.ort');
+      await loadNcnnModel('packages/yolo_ffi/assets/yolo11n.ncnn');
       _completer.complete(true);
     } catch (e) {
       _completer.completeError(e);

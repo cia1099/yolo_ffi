@@ -1,26 +1,31 @@
 #include "ncnn_yolo.h"
 #include <chrono>
-#include <filesystem>
 #include <opencv2/dnn.hpp>
 #include "print.h"
 
 // Creates and returns a new NCNN container.
 // It is the caller's responsibility to call close_net on the returned pointer.
-NcnnContainer* create_net(const char* model_path) {
+NcnnContainer* create_net(const char* model_stem) {
 	auto* container = new NcnnContainer;
 	container->net = new ncnn::Net();
+	// container->net->opt.use_vulkan_compute = true;
 
-	std::filesystem::path p(model_path);
-	auto ext = p.extension().string();
+	char param_path[512];
+	char bin_path[512];
+	snprintf(param_path, sizeof(param_path), "%s.param", model_stem);
+	snprintf(bin_path, sizeof(bin_path), "%s.bin", model_stem);
 
-	if (ext == ".param") {
-		container->net->load_param(model_path);
-	} else if (ext == ".bin") {
-		container->net->load_model(model_path);
-	} else {
+	// Load the NCNN model
+	if (container->net->load_param(param_path) != 0) {
 		delete container->net;
 		delete container;
 		print_message("Failed to load NCNN param file.");
+		return nullptr;
+	}
+	if (container->net->load_model(bin_path) != 0) {
+		delete container->net;
+		delete container;
+		print_message("Failed to load NCNN bin file.");
 		return nullptr;
 	}
 
@@ -38,27 +43,10 @@ std::vector<Detection> run_ncnn(NcnnContainer* container, cv::InputArray image, 
 
 	// Preprocessing
 	auto tic = high_resolution_clock::now();
-	cv::Mat input_image;
-	image.getMat().copyTo(input_image);
-	int w = input_image.cols;
-	int h = input_image.rows;
-	float scale = 1.f;
-	if (w > h) {
-		scale = (float)INPUT_WIDTH / w;
-		w = INPUT_WIDTH;
-		h = h * scale;
-	} else {
-		scale = (float)INPUT_HEIGHT / h;
-		h = INPUT_HEIGHT;
-		w = w * scale;
-	}
-	cv::Mat resized_image;
-	cv::resize(input_image, resized_image, cv::Size(w, h));
 
-	cv::Mat padded_image(INPUT_HEIGHT, INPUT_WIDTH, CV_8UC3, cv::Scalar(114, 114, 114));
-	resized_image.copyTo(padded_image(cv::Rect(0, 0, w, h)));
+	cv::Mat img = image.getMat();
+	ncnn::Mat in = ncnn::Mat::from_pixels_resize(img.data, ncnn::Mat::PIXEL_RGBA2RGB, img.cols, img.rows, INPUT_WIDTH, INPUT_HEIGHT);
 
-	ncnn::Mat in = ncnn::Mat::from_pixels(padded_image.data, ncnn::Mat::PIXEL_RGB, INPUT_WIDTH, INPUT_HEIGHT);
 	const float mean_vals[3] = {0, 0, 0};
 	const float norm_vals[3] = {1 / 255.f, 1 / 255.f, 1 / 255.f};
 	in.substract_mean_normalize(mean_vals, norm_vals);
@@ -69,56 +57,67 @@ std::vector<Detection> run_ncnn(NcnnContainer* container, cv::InputArray image, 
 	// Inference
 	tic = high_resolution_clock::now();
 	ncnn::Extractor ex = container->net->create_extractor();
-	ex.input("images", in);
+	ex.input("in0", in);
 	ncnn::Mat out;
-	ex.extract("output", out);
+	ex.extract("out0", out);
 	toc = high_resolution_clock::now();
 	auto infer_elapsed = duration_cast<milliseconds>(toc - tic);
 
 	// Post-processing
 	tic = high_resolution_clock::now();
-	std::vector<Detection> detections;
-	int output_height = out.h;
+
+	// Transpose [1, 84, N] to [1, N, 84]
+	int num_detections = out.w;
+	int num_classes = out.h;
+	// char out_shape[128];
+	// sprintf(out_shape, "output shape: [%d, %d, %d]", out.d, out.h, out.w);
+	// print_message(out_shape);
+	std::vector<float> transposed_output(out.d * num_detections * num_classes);
+	auto raw_output = (const float*)((unsigned char*)out.data);
+	for (int i = 0; i < num_detections; ++i) {
+		for (int j = 0; j < num_classes; ++j) {
+			transposed_output[i * num_classes + j] = raw_output[j * num_detections + i];
+		}
+	}
 
 	std::vector<cv::Rect> boxes;
 	std::vector<float> confidences;
 	std::vector<int> class_ids;
 
-	for (int i = 0; i < output_height; i++) {
-		const float* values = out.row(i);
+	for (int i = 0; i < num_detections; ++i) {
+		const float* detection = transposed_output.data() + i * num_classes;
+		const float* class_scores = detection + 4;
 
-		float confidence = values[4];
-		if (confidence >= conf_threshold) {
-			float class_score = 0;
-			int class_id = 0;
-			for (int j = 5; j < out.w; j++) {
-				if (values[j] > class_score) {
-					class_score = values[j];
-					class_id = j - 5;
-				}
+		int class_id = -1;
+		float max_score = 0.0f;
+		for (int j = 0; j < 84 - 4; ++j) {
+			if (class_scores[j] > max_score) {
+				max_score = class_scores[j];
+				class_id = j;
 			}
+		}
 
-			if (class_score > 0.25f) {  // Second confidence check
-				float cx = values[0];
-				float cy = values[1];
-				float w_box = values[2];
-				float h_box = values[3];
+		if (max_score > conf_threshold) {
+			float cx = detection[0];
+			float cy = detection[1];
+			float w = detection[2];
+			float h = detection[3];
 
-				int left = static_cast<int>((cx - 0.5 * w_box) / scale);
-				int top = static_cast<int>((cy - 0.5 * h_box) / scale);
-				int width = static_cast<int>(w_box / scale);
-				int height = static_cast<int>(h_box / scale);
+			int left = static_cast<int>(std::round(cx - 0.5 * w));
+			int top = static_cast<int>(std::round(cy - 0.5 * h));
+			int width = static_cast<int>(std::round(w));
+			int height = static_cast<int>(std::round(h));
 
-				boxes.emplace_back(left, top, width, height);
-				confidences.emplace_back(confidence);
-				class_ids.emplace_back(class_id);
-			}
+			boxes.emplace_back(left, top, width, height);
+			confidences.emplace_back(max_score);
+			class_ids.emplace_back(class_id);
 		}
 	}
 
 	std::vector<int> nms_indices;
 	cv::dnn::NMSBoxes(boxes, confidences, conf_threshold, nms_threshold, nms_indices);
 
+	std::vector<Detection> detections;
 	for (int idx : nms_indices) {
 		Detection result;
 		result.box = boxes[idx];
