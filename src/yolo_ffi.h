@@ -10,9 +10,6 @@
 #define FFI_PLUGIN_EXPORT __attribute__((visibility("default"))) __attribute__((used))
 #endif
 
-// Forward declare the session container struct.
-struct OrtSessionContainer;
-
 typedef struct {
 	const float* bboxes;
 	int count;
@@ -59,5 +56,9 @@ FFI_PLUGIN_EXPORT void free_rgba_buffer(uint8_t* buffer);
 #ifdef __cplusplus
 }
 #endif
+
+// Forward declare the session container struct.
+struct OrtSessionContainer;
+struct NcnnContainer;
 
 #endif  // YOLO_FFI_H

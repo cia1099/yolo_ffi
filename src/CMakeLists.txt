@@ -14,6 +14,7 @@ if(ANDROID)
     set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../../onnxruntime/android/lib/cmake/onnxruntime)
     # set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../opencv/native/jni/abi-arm64-v8a)
     set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../../opencv/android/sdk/native/jni/abi-arm64-v8a)
+    set(ncnn_DIR ${CMAKE_SOURCE_DIR}/../../ncnn/android/lib/cmake/ncnn)
 elseif(APPLE OR IOS)
   if(SIMULATOR)
     set(IOS_DIR sim_ios)
@@ -28,6 +29,7 @@ endif()
 
 find_package(onnxruntime REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(ncnn REQUIRED)
 
 if((IOS OR APPLE) AND NOT SIMULATOR)
   set(LIB_TYPE STATIC)
@@ -36,16 +38,20 @@ else()
 endif()
 add_library(yolo_ffi ${LIB_TYPE}
   "yolo_ffi.cpp"
-  "yolo_onnx.cpp"
   "print.cpp"
+  "onnx_yolo.cpp"
+  "onnx_ffi.cpp"
+  # "ncnn_yolo.cpp"
+  # "ncnn_ffi.cpp"
 )
 
-target_link_libraries(yolo_ffi onnxruntime::onnxruntime ${OpenCV_LIBS})
+target_link_libraries(yolo_ffi ${OpenCV_LIBS} onnxruntime::onnxruntime)
 
 set_target_properties(yolo_ffi PROPERTIES
 # PUBLIC_HEADER "yolo_ffi.h;yolo_onnx.h"
   PUBLIC_HEADER "yolo_ffi.h;print.h"
   OUTPUT_NAME "yolo_ffi"
+  CXX_STANDARD 17
 )
 # Used Frameworks to make iOS support multiple Apple devices
 if(APPLE OR IOS)

@@ -1,4 +1,5 @@
-#include "yolo_onnx.h"
+#include "onnx_yolo.h"
+#include <chrono>
 #include <cstring>  // For strlen and strcpy
 #include <opencv2/dnn.hpp>
 #include <vector>
@@ -46,7 +47,7 @@ OrtSessionContainer* create_session(const char* model_path) {
 		delete container->env;
 		delete container;
 		// Optionally, log the error message e.what()
-		// printf("\x1b[32m%s\x1b[0m", e.what());
+		print_message(e.what());
 		return nullptr;
 	}
 
@@ -76,21 +77,26 @@ const char* get_input_name(OrtSessionContainer* container) {
 }
 
 std::vector<Detection> run_inference(OrtSessionContainer* container, cv::InputArray image, float conf_threshold, float nms_threshold) {
-	print_message("Running inference...");
 	if (!container || !container->session) {
 		return {};
 	}
+	using namespace std::chrono;
 	const int INPUT_WIDTH = 640;
 	const int INPUT_HEIGHT = 640;
 
 	// Preprocessing
+	auto tic = high_resolution_clock::now();
 	cv::Mat3b input_image;
 	cv::cvtColor(image, input_image, cv::COLOR_RGBA2RGB);
 
 	cv::Mat blob;
 	cv::dnn::blobFromImage(input_image, blob, 1. / 255., cv::Size(INPUT_WIDTH, INPUT_HEIGHT), cv::Scalar(), true, false);
 
+	auto toc = high_resolution_clock::now();
+	auto pre_elapsed = duration_cast<milliseconds>(toc - tic);
+
 	// Create input tensor
+	tic = high_resolution_clock::now();
 	Ort::AllocatorWithDefaultOptions allocator;
 	Ort::AllocatedStringPtr input_name_ptr = container->session->GetInputNameAllocated(0, allocator);
 	const char* input_name = input_name_ptr.get();
@@ -104,8 +110,11 @@ std::vector<Detection> run_inference(OrtSessionContainer* container, cv::InputAr
 
 	// Run session
 	std::vector<Ort::Value> output_tensors = container->session->Run(Ort::RunOptions{nullptr}, &input_name, &input_tensor, 1, &output_name, 1);
+	toc = high_resolution_clock::now();
+	auto infer_elapsed = duration_cast<milliseconds>(toc - tic);
 
 	// Post-processing
+	tic = high_resolution_clock::now();
 	const float* raw_output = output_tensors[0].GetTensorData<float>();
 	auto output_shape = output_tensors[0].GetTensorTypeAndShapeInfo().GetShape();  // Should be [1, 84, N]
 	const int num_classes = static_cast<int>(output_shape[1]);
@@ -149,8 +158,8 @@ std::vector<Detection> run_inference(OrtSessionContainer* container, cv::InputAr
 			int height = static_cast<int>(std::round(h));
 
 			boxes.emplace_back(left, top, width, height);
-			confidences.push_back(max_score);
-			class_ids.push_back(class_id);
+			confidences.emplace_back(max_score);
+			class_ids.emplace_back(class_id);
 		}
 	}
 
@@ -165,6 +174,12 @@ std::vector<Detection> run_inference(OrtSessionContainer* container, cv::InputAr
 		result.class_id = class_ids[idx];
 		detections.push_back(result);
 	}
+	toc = high_resolution_clock::now();
+	auto post_elapsed = duration_cast<milliseconds>(toc - tic);
+	char buffer[1024];
+	auto total = pre_elapsed + infer_elapsed + post_elapsed;
+	sprintf(buffer, "Elapsed Time(%lld ms): preprocess: %lld ms, inference: %lld ms, postprocess: %lld ms", total.count(), pre_elapsed.count(), infer_elapsed.count(), post_elapsed.count());
+	print_message(buffer);
 
 	return detections;
 }

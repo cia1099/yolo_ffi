@@ -170,6 +170,28 @@ cmake --install build/iOS/Release
 --cmake_extra_defines CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_INSTALL_PREFIX=$PWD/android \
 --android_abi arm64-v8a --android_api 35
 ```
+
+### Build ncnn
+```sh
+git clone --recursive --depth=1 -b 20250916 https://github.com/Tencent/ncnn.git
+```
+* Android
+```sh
+cmake -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
+-DANDROID_ABI="arm64-v8a" -DANDROID_ARM_NEON=ON \
+-DANDROID_PLATFORM=android-21 -DNCNN_VULKAN=ON \
+-DCMAKE_INSTALL_PREFIX=$PWD/android -DBUILD_SHARED_LIBS=ON \
+-S. -Bbuild -G Ninja && \
+cmake --build build --config Release -t install -j$(nproc)
+```
+
+* Export torchscript
+[use ncnn with pytorch or onnx](https://github.com/Tencent/ncnn/wiki/use-ncnn-with-pytorch-or-onnx)
+```sh
+python3 -c "from ultralytics import YOLO;model = YOLO('yolo11n.pt');model.export(format='torchscript')"
+pnnx yolo11n.torchscript
+```
+
 ---
 
 ### FFI tutorial
@@ -247,15 +269,6 @@ To avoid writing these by hand, they are generated from the header file
 (`src/yolo_ffi.h`) by `package:ffigen`.
 Regenerate the bindings by running `dart run ffigen --config ffigen.yaml`.
 
-```cpp
-  Ort::SessionOptions session_options;
-  session_options.SetIntraOpNumThreads(1);
-  uint32_t nnapi_flags = 0;  // NNAPI_FLAG_CPU_DISABLED;
-  uint32_t nnapi_flags = NNAPI_FLAG_CPU_ONLY;
-  Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(session_options, nnapi_flags));
-  container->session = new Ort::Session(*container->env, model_path, session_options);
-
-```
 
 
 
