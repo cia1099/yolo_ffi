@@ -1,16 +1,21 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:yolo_ffi/yolo_ffi.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 
-class OrtYoloFfi {
+import 'yolo_detect.dart';
+
+class YoloModel {
   final _completer = Completer<bool>();
+  late final StreamSubscription<String>? _cppConsole;
+  final bool printConsole;
 
-  OrtYoloFfi() {
+  YoloModel({this.printConsole = false}) {
     _init();
   }
 
   void dispose() {
+    _cppConsole?.cancel();
     closeModel();
   }
 
@@ -18,6 +23,11 @@ class OrtYoloFfi {
     try {
       // await loadModel('packages/yolo_ffi/assets/yolo11n.ort');
       await loadNcnnModel('packages/yolo_ffi/assets/yolo11n.ncnn');
+      _cppConsole = printConsole
+          ? PlatformChannel.getCppConsole.listen((msg) {
+              debugPrint("\x1b[43m$msg\x1b[0m");
+            })
+          : null;
       _completer.complete(true);
     } catch (e) {
       _completer.completeError(e);

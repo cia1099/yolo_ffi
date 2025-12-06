@@ -2,8 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:statsfl/statsfl.dart';
 import 'package:yolo_ffi/yolo_ffi.dart' as yolo_ffi;
-
-import 'dev_page.dart';
+import 'package:yolo_ffi_example/dev_page.dart';
 
 void main() {
   // It's recommended to call this before runApp to ensure Flutter bindings are initialized.
@@ -16,7 +15,7 @@ void main() {
         debugShowCheckedModeBanner: false,
         // home: const GetInputNamePage(),
         home: const DevPage(),
-        // home: const CameraPage(),
+        // home: const CameraPage(printConsole: false),
       ),
     ),
   );

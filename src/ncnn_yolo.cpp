@@ -66,42 +66,37 @@ std::vector<Detection> run_ncnn(NcnnContainer* container, cv::InputArray image, 
 	// Post-processing
 	tic = high_resolution_clock::now();
 
-	// Transpose [1, 84, N] to [1, N, 84]
 	int num_detections = out.w;
 	int num_classes = out.h;
+	// Output shape should be [1, 84, N]
 	// char out_shape[128];
 	// sprintf(out_shape, "output shape: [%d, %d, %d]", out.d, out.h, out.w);
 	// print_message(out_shape);
-	std::vector<float> transposed_output(out.d * num_detections * num_classes);
 	auto raw_output = (const float*)((unsigned char*)out.data);
-	for (int i = 0; i < num_detections; ++i) {
-		for (int j = 0; j < num_classes; ++j) {
-			transposed_output[i * num_classes + j] = raw_output[j * num_detections + i];
-		}
-	}
 
 	std::vector<cv::Rect> boxes;
 	std::vector<float> confidences;
 	std::vector<int> class_ids;
 
 	for (int i = 0; i < num_detections; ++i) {
-		const float* detection = transposed_output.data() + i * num_classes;
-		const float* class_scores = detection + 4;
+		const float* detection = raw_output + i;
+		const float* class_scores = detection + 4 * num_detections;
 
 		int class_id = -1;
 		float max_score = 0.0f;
-		for (int j = 0; j < 84 - 4; ++j) {
-			if (class_scores[j] > max_score) {
-				max_score = class_scores[j];
+		for (int j = 0; j < num_classes - 4; ++j) {
+			int idx = j * num_detections;
+			if (class_scores[idx] > max_score) {
+				max_score = class_scores[idx];
 				class_id = j;
 			}
 		}
 
 		if (max_score > conf_threshold) {
-			float cx = detection[0];
-			float cy = detection[1];
-			float w = detection[2];
-			float h = detection[3];
+			float cx = detection[0 * num_detections];
+			float cy = detection[1 * num_detections];
+			float w = detection[2 * num_detections];
+			float h = detection[3 * num_detections];
 
 			int left = static_cast<int>(std::round(cx - 0.5 * w));
 			int top = static_cast<int>(std::round(cy - 0.5 * h));

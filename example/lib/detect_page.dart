@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:yolo_ffi/ort_yolo_ffi.dart';
+import 'package:yolo_ffi/yolo_ffi.dart';
 
 import 'frosted_button.dart';
 import 'painters.dart';
@@ -13,15 +13,20 @@ import 'yuv2rgba_converter.dart';
 
 class DetectPage extends StatefulWidget {
   final CameraDescription camera;
+  final bool printConsole;
 
-  const DetectPage({super.key, required this.camera});
+  const DetectPage({
+    super.key,
+    required this.camera,
+    this.printConsole = false,
+  });
 
   @override
   State<DetectPage> createState() => _DetectPageState();
 }
 
 class _DetectPageState extends State<DetectPage> {
-  late final ortYolo = OrtYoloFfi();
+  late final yoloModel = YoloModel(printConsole: widget.printConsole);
   final boxes = PaintingBoxes();
   late final isAndroid = Theme.of(context).platform == TargetPlatform.android;
   late final controller = CameraController(
@@ -29,7 +34,7 @@ class _DetectPageState extends State<DetectPage> {
     ResolutionPreset.medium,
   );
   late final isReady = controller.initialize().then((_) async {
-    if (!(await ortYolo.isReady)) {
+    if (!(await yoloModel.isReady)) {
       throw Exception("Failed to load YOLO model");
     }
 
@@ -64,9 +69,9 @@ class _DetectPageState extends State<DetectPage> {
       if (isDetect) {
         final infSw = Stopwatch()..start();
         if (isAndroid) {
-          boxes << await ortYolo(await frame.androidResize(640, 640));
+          boxes << await yoloModel(await frame.androidResize(640, 640));
         } else {
-          boxes << await ortYolo(frame);
+          boxes << await yoloModel(frame);
         }
         debugPrint(
           "\x1b[32mElapsed time: infer = ${(infSw..stop()).elapsedMilliseconds}ms\x1b[0m",
@@ -153,14 +158,15 @@ class _DetectPageState extends State<DetectPage> {
     controller.stopImageStream().whenComplete(() {
       controller.dispose();
     });
-    ortYolo.dispose();
+    yoloModel.dispose();
     streamController.close();
     super.dispose();
   }
 }
 
 class CameraPage extends StatefulWidget {
-  const CameraPage({super.key});
+  final bool printConsole;
+  const CameraPage({super.key, this.printConsole = false});
 
   @override
   State<CameraPage> createState() => _CameraPageState();
@@ -193,6 +199,7 @@ class _CameraPageState extends State<CameraPage> {
                         camera: cameras.firstWhere(
                           (c) => c.lensDirection == CameraLensDirection.back,
                         ),
+                        printConsole: widget.printConsole,
                       ),
                       fullscreenDialog: true,
                       settings: RouteSettings(name: "detect"),

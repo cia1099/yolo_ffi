@@ -12,7 +12,6 @@ endif()
 # Set the onnxruntime_DIR to point directly to the package config files
 if(ANDROID)
     set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../../onnxruntime/android/lib/cmake/onnxruntime)
-    # set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../opencv/native/jni/abi-arm64-v8a)
     set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../../opencv/android/sdk/native/jni/abi-arm64-v8a)
     set(ncnn_DIR ${CMAKE_SOURCE_DIR}/../../ncnn/android/lib/cmake/ncnn)
 elseif(APPLE OR IOS)
@@ -52,7 +51,7 @@ set_target_properties(yolo_ffi PROPERTIES
 # PUBLIC_HEADER "yolo_ffi.h;yolo_onnx.h"
   PUBLIC_HEADER "yolo_ffi.h;print.h"
   OUTPUT_NAME "yolo_ffi"
-  CXX_STANDARD 17
+  # CXX_STANDARD 17
 )
 # Used Frameworks to make iOS support multiple Apple devices
 if(APPLE OR IOS)

@@ -3,8 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:yolo_ffi/ort_yolo_ffi.dart';
-import 'package:yolo_ffi/yolo_ffi.dart' show BoundingBox;
+import 'package:yolo_ffi/yolo_ffi.dart';
 
 class CameraPainter extends CustomPainter {
   final ui.Image frame;
@@ -74,8 +73,8 @@ class BoxesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (boxes == null || boxes!.isEmpty) return;
-    final scaleX = size.width / OrtYoloFfi.inputSize;
-    final scaleY = size.height / OrtYoloFfi.inputSize;
+    final scaleX = size.width / YoloModel.inputSize;
+    final scaleY = size.height / YoloModel.inputSize;
     for (final box in boxes!) {
       final rect = Rect.fromLTRB(
         box.x1 * scaleX,

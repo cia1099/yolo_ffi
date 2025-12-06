@@ -39,7 +39,7 @@ public class YoloFfiPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         guard let sink = eventSink else {
             // Optional: Add a log here if needed for debugging why the sink is nil.
-            print("YoloFfiPlugin: eventSink is nil, dropping message.")
+            // print("YoloFfiPlugin: eventSink is nil, dropping message.")
             return
         }
 
