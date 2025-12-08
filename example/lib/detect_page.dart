@@ -27,6 +27,10 @@ class DetectPage extends StatefulWidget {
 
 class _DetectPageState extends State<DetectPage> {
   late final yoloModel = YoloModel(printConsole: widget.printConsole);
+  // late final yoloModel = IsolateYolo(
+  //   detectedCallback: (bBoxes) => boxes << bBoxes,
+  //   printConsole: widget.printConsole,
+  // );
   final boxes = PaintingBoxes();
   late final isAndroid = Theme.of(context).platform == TargetPlatform.android;
   late final controller = CameraController(
@@ -69,8 +73,10 @@ class _DetectPageState extends State<DetectPage> {
       if (isDetect) {
         final infSw = Stopwatch()..start();
         if (isAndroid) {
+          // await yoloModel(await frame.androidResize(640, 640));
           boxes << await yoloModel(await frame.androidResize(640, 640));
         } else {
+          // yoloModel(frame);
           boxes << await yoloModel(frame);
         }
         debugPrint(

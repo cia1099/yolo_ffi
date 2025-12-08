@@ -81,7 +81,7 @@ class _DevPageState extends State<DevPage> {
                 boxes << await ortYolo(await image);
                 // print("\x1b[43mDetect objects: ${boxes.length}\x1b[0m");
                 debugPrint(
-                  "Elapsed time: ${(sw..stop()).elapsedMilliseconds}ms",
+                  "\x1b[33mElapsed time: ${(sw..stop()).elapsedMilliseconds}ms\x1b[0m",
                 );
                 timer = Timer(Durations.extralong4 * 2, () => boxes << []);
               },

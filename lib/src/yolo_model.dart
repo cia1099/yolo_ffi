@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show debugPrint;
 
-import 'yolo_detect.dart';
+import 'bridge_ffi.dart';
 
 class YoloModel {
   final _completer = Completer<bool>();

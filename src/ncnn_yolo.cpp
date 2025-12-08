@@ -8,7 +8,16 @@
 NcnnContainer* create_net(const char* model_stem) {
 	auto* container = new NcnnContainer;
 	container->net = new ncnn::Net();
+	// container->net->opt.num_threads = 4;
+	container->net->opt.use_packing_layout = true;
+	container->net->opt.use_bf16_storage = true;
+	// container->net->opt.use_winograd_convolution = true;
+	// container->net->opt.use_sgemm_convolution = true;
+	// container->net->opt.use_fp16_storage = true;
+
 	// container->net->opt.use_vulkan_compute = true;
+	// container->net->opt.use_fp16_packed = true;
+	// container->net->opt.use_fp16_arithmetic = true;  // 如果设备支持 FP16
 
 	char param_path[512];
 	char bin_path[512];

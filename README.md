@@ -193,6 +193,24 @@ pnnx yolo11n.torchscript "inputshape=[1,3,640,640]" ncnnpy=ncnn_example.py
 
 ```
 
+* Build ncnnoptimize
+```sh
+cd ncnn/tools
+cmake -S.. -Bbuild \
+-DNCNN_BUILD_BENCHMARK=OFF \
+-DNCNN_BUILD_EXAMPLES=OFF \
+-DNCNN_BUILD_TOOLS=ON \
+-DNCNN_BUILD_GPU=OFF \
+-DNCNN_BUILD_TESTS=OFF \
+-DNCNN_DISABLE_RTTI=ON \
+-DNCNN_DISABLE_EXCEPTION=ON \
+-DNCNN_SHARED_LIB=ON
+
+# look all targets
+cmake --build build -t help
+cmake --build build --config Release -t ncnnoptimize -j$(nproc)
+```
+
 ---
 
 ### FFI tutorial

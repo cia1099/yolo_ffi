@@ -1,3 +1,3 @@
-export 'src/yolo_detect.dart'
-    show closeModel, getModelInputName, loadModel, BoundingBox;
+export 'src/bridge_ffi.dart' show BoundingBox, convertImage;
+export 'src/isolate_yolo.dart';
 export 'src/yolo_model.dart';
