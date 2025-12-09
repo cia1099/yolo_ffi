@@ -26,11 +26,11 @@ class DetectPage extends StatefulWidget {
 }
 
 class _DetectPageState extends State<DetectPage> {
-  late final yoloModel = YoloModel(printConsole: widget.printConsole);
-  // late final yoloModel = IsolateYolo(
-  //   detectedCallback: (bBoxes) => boxes << bBoxes,
-  //   printConsole: widget.printConsole,
-  // );
+  // late final yoloModel = YoloModel(printConsole: widget.printConsole);
+  late final iYolo = IsolateYolo(
+    detectedCallback: (bBoxes) => boxes << bBoxes,
+    printConsole: widget.printConsole,
+  );
   final boxes = PaintingBoxes();
   late final isAndroid = Theme.of(context).platform == TargetPlatform.android;
   late final controller = CameraController(
@@ -38,7 +38,7 @@ class _DetectPageState extends State<DetectPage> {
     ResolutionPreset.medium,
   );
   late final isReady = controller.initialize().then((_) async {
-    if (!(await yoloModel.isReady)) {
+    if (!(await iYolo.isReady)) {
       throw Exception("Failed to load YOLO model");
     }
 
@@ -73,11 +73,11 @@ class _DetectPageState extends State<DetectPage> {
       if (isDetect) {
         final infSw = Stopwatch()..start();
         if (isAndroid) {
-          // await yoloModel(await frame.androidResize(640, 640));
-          boxes << await yoloModel(await frame.androidResize(640, 640));
+          iYolo(await frame.androidResize(640, 640));
+          // boxes << await yoloModel(await frame.androidResize(640, 640));
         } else {
-          // yoloModel(frame);
-          boxes << await yoloModel(frame);
+          iYolo(frame);
+          // boxes << await yoloModel(frame);
         }
         debugPrint(
           "\x1b[32mElapsed time: infer = ${(infSw..stop()).elapsedMilliseconds}ms\x1b[0m",
@@ -164,7 +164,7 @@ class _DetectPageState extends State<DetectPage> {
     controller.stopImageStream().whenComplete(() {
       controller.dispose();
     });
-    yoloModel.dispose();
+    iYolo.dispose();
     streamController.close();
     super.dispose();
   }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -24,7 +25,6 @@ class IsolateYolo {
 
   Future<void> _init() async {
     try {
-      // await loadModel('packages/yolo_ffi/assets/yolo11n.ort');
       await loadNcnnModel('packages/yolo_ffi/assets/yolo11n.ncnn');
       _cppConsole = printConsole
           ? PlatformChannel.getCppConsole.listen((msg) {
@@ -32,7 +32,7 @@ class IsolateYolo {
             })
           : null;
 
-      _outputWatcher.listen(_handleResponseFromIsolate);
+      _outputWatcher.listen(_handleOutputFromIsolate);
       _isolate = await Isolate.spawn(
         _startRemoteIsolate,
         _outputWatcher.sendPort,
@@ -42,52 +42,116 @@ class IsolateYolo {
     }
   }
 
-  void _handleResponseFromIsolate(res) {
-    if (res is SendPort) {
-      _input = res;
+  void _handleOutputFromIsolate(export) {
+    if (export is SendPort && !_isolateReady.isCompleted) {
+      _input = export;
       _isolateReady.complete(true);
-    } else if (res is List<BoundingBox>) {
-      detectedCallback(res);
-    } else if (res is String) {
-      debugPrint("\x1b[43m$res\x1b[0m");
+    } else if (export is List<BoundingBox>) {
+      detectedCallback(export);
     }
   }
 
-  Future<void> call(ui.Image frame) async {
+  Future<void> call(
+    ui.Image frame, {
+    double confThreshold = .25,
+    double nmsThreshold = .45,
+  }) async {
     if (await _isolateReady.future) {
       final bytes = await frame.toByteData();
       if (bytes == null) return;
-      _input.send(bytes.buffer.asUint8List());
-      // _input.send(frame);
+      _input.send(
+        _YoloInput(
+          imageData: bytes.buffer.asUint8List(),
+          width: frame.width,
+          height: frame.height,
+          confThreshold: confThreshold,
+          nmsThreshold: nmsThreshold,
+        ),
+      );
     }
   }
 
   void dispose() {
     _input.send(null);
     _outputWatcher.close();
-    _isolate?.kill(priority: Isolate.immediate);
     _cppConsole?.cancel();
-    closeModel();
+    _isolate?.kill(); //(priority: Isolate.immediate);
   }
 }
 
 @pragma('vm:entry-point')
-void _startRemoteIsolate(SendPort output) {
+void _startRemoteIsolate(SendPort output) async {
   final inputListener = ReceivePort();
   output.send(inputListener.sendPort);
+  final inputs = FixedQueue<_YoloInput>(1);
+  var isListening = true;
 
-  inputListener.listen((frame) async {
-    if (frame is Uint8List) {
-      // final bytes = await frame.toByteData();
-      // if (bytes == null) return;
-      final bBoxes = yoloDetect(
-        imageData: frame, //bytes.buffer.asUint8List(),
-        height: 640,
-        width: 640,
-      );
-      output.send(bBoxes);
-    } else if (frame == null) {
+  inputListener.listen((input) {
+    if (input is _YoloInput) {
+      inputs.add(input);
+    } else if (input == null) {
       inputListener.close();
+      inputs.clear();
+      isListening = false;
     }
+  }, onDone: () => debugPrint("\x1b[35mshut down YOLO isolate\x1b[0m"));
+  while (isListening) {
+    final input = inputs.pop();
+    if (input == null) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      continue;
+    }
+
+    final bBoxes = yoloDetect(
+      imageData: input.imageData,
+      height: input.height,
+      width: input.width,
+      confThreshold: input.confThreshold,
+      nmsThreshold: input.nmsThreshold,
+    );
+    output.send(bBoxes);
+  }
+  closeModel();
+}
+
+class FixedQueue<T> {
+  final int maxSize;
+  final ListQueue<T> _queue;
+
+  FixedQueue(this.maxSize) : _queue = ListQueue<T>();
+
+  void add(T value) {
+    if (_queue.length >= maxSize) {
+      _queue.removeFirst(); // 移除最旧的元素
+    }
+    _queue.addLast(value); // 加入新元素
+  }
+
+  T? pop() => _queue.isNotEmpty ? _queue.removeFirst() : null;
+  void clear() => _queue.clear();
+
+  List<T> toList() => _queue.toList();
+
+  int get length => _queue.length;
+  bool get isEmpty => _queue.isEmpty;
+  bool get isNotEmpty => _queue.isNotEmpty;
+
+  @override
+  String toString() => _queue.toString();
+}
+
+class _YoloInput {
+  final Uint8List imageData;
+  final int width;
+  final int height;
+  final double confThreshold;
+  final double nmsThreshold;
+
+  _YoloInput({
+    required this.imageData,
+    required this.width,
+    required this.height,
+    required this.confThreshold,
+    required this.nmsThreshold,
   });
 }
