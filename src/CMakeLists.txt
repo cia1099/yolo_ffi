@@ -9,9 +9,9 @@ if(CMAKE_OSX_SYSROOT MATCHES "iphonesimulator")
     set(SIMULATOR ON)
 endif()
 
-# Set the onnxruntime_DIR to point directly to the package config files
+# Set the $LIBRARIES_DIR to point directly to the package config files
 if(ANDROID)
-    set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../../onnxruntime/android/lib/cmake/onnxruntime)
+    # set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../../onnxruntime/android/lib/cmake/onnxruntime)
     set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../../opencv/android/sdk/native/jni/abi-arm64-v8a)
     set(ncnn_DIR ${CMAKE_SOURCE_DIR}/../../ncnn/android/lib/cmake/ncnn)
 elseif(APPLE OR IOS)
@@ -22,31 +22,48 @@ elseif(APPLE OR IOS)
   else()
     set(IOS_DIR ios)
   endif()
-    set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../../onnxruntime/${IOS_DIR}/lib/cmake/onnxruntime)
+    # set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../../onnxruntime/${IOS_DIR}/lib/cmake/onnxruntime)
     set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../../opencv/${IOS_DIR}/lib/cmake/opencv4)
 endif()
 
-find_package(onnxruntime REQUIRED)
+# find_package(onnxruntime REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(ncnn REQUIRED)
+if(IOS OR APPLE)
+  find_library(FOUNDATION Foundation)
+  find_library(COREML CoreML)
+  find_library(COREVIDEO CoreVideo)
+  find_library(VISION Vision)
+else()
+  find_package(ncnn REQUIRED)
+endif()
+
+set(SOURCES
+  "yolo_ffi.cpp"
+  "print.cpp"
+  # "onnx_yolo.cpp"
+  # "onnx_ffi.cpp"
+)
+if(IOS OR APPLE)
+  # enable_language(OBJC OBJCXX)
+  list(APPEND SOURCES "coreml_yolo.mm" "coreml_ffi.mm")
+else()
+  list(APPEND SOURCES "ncnn_yolo.cpp" "ncnn_ffi.cpp")
+endif()
 
 if((IOS OR APPLE) AND NOT SIMULATOR)
   set(LIB_TYPE STATIC)
 else()
   set(LIB_TYPE SHARED)
 endif()
-add_library(yolo_ffi ${LIB_TYPE}
-  "yolo_ffi.cpp"
-  "print.cpp"
-  # "onnx_yolo.cpp"
-  # "onnx_ffi.cpp"
-  "ncnn_yolo.cpp"
-  "ncnn_ffi.cpp"
-)
+add_library(yolo_ffi ${LIB_TYPE} ${SOURCES})
 
 # target_link_libraries(yolo_ffi ${OpenCV_LIBS} onnxruntime::onnxruntime)
-target_link_libraries(yolo_ffi ${OpenCV_LIBS} ncnn)
-
+target_link_libraries(yolo_ffi ${OpenCV_LIBS})
+if(IOS OR APPLE)
+  target_link_libraries(yolo_ffi ${FOUNDATION} ${COREML} ${VISION} ${COREVIDEO})
+else()
+  target_link_libraries(yolo_ffi ncnn)
+endif()
 set_target_properties(yolo_ffi PROPERTIES
 # PUBLIC_HEADER "yolo_ffi.h;yolo_onnx.h"
   PUBLIC_HEADER "yolo_ffi.h;print.h"

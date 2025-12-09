@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io' show Platform;
 import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -25,7 +26,11 @@ class IsolateYolo {
 
   Future<void> _init() async {
     try {
-      await loadNcnnModel('packages/yolo_ffi/assets/yolo11n.ncnn');
+      if (Platform.isIOS || Platform.isMacOS) {
+        await loadModel('packages/yolo_ffi/assets/yolo11n.mlmodel');
+      } else {
+        await loadNcnnModel('packages/yolo_ffi/assets/yolo11n.ncnn');
+      }
       _cppConsole = printConsole
           ? PlatformChannel.getCppConsole.listen((msg) {
               debugPrint("\x1b[43m$msg\x1b[0m");

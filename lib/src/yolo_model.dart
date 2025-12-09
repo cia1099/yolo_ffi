@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show debugPrint;
@@ -21,8 +22,11 @@ class YoloModel {
 
   Future<void> _init() async {
     try {
-      // await loadModel('packages/yolo_ffi/assets/yolo11n.ort');
-      await loadNcnnModel('packages/yolo_ffi/assets/yolo11n.ncnn');
+      if (Platform.isIOS || Platform.isMacOS) {
+        await loadModel('packages/yolo_ffi/assets/yolo11n.mlmodel');
+      } else {
+        await loadNcnnModel('packages/yolo_ffi/assets/yolo11n.ncnn');
+      }
       _cppConsole = printConsole
           ? PlatformChannel.getCppConsole.listen((msg) {
               debugPrint("\x1b[43m$msg\x1b[0m");

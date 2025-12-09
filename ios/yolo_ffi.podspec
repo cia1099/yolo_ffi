@@ -36,7 +36,7 @@ A new Flutter FFI plugin project.
   ## ls example/build/ios/iphoneos/Runner.app/Frameworks # Check the .dylib in here.
 
   s.dependency 'Flutter'
-  s.frameworks = 'Accelerate'
+  s.frameworks = 'Accelerate', 'Foundation', 'CoreML', 'CoreVideo', 'Vision'
   s.platform = :ios, '13.0'
 
   # Flutter.framework does not contain a i386 slice.

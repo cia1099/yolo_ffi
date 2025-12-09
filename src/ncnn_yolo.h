@@ -1,5 +1,5 @@
-#ifndef YOLO_NCNN_H
-#define YOLO_NCNN_H
+#ifndef NCNN_YOLO_H
+#define NCNN_YOLO_H
 
 #include <net.h>
 #include <opencv2/opencv.hpp>
