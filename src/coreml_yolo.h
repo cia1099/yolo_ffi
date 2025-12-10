@@ -1,12 +1,13 @@
 #ifndef COREML_YOLO_H
 #define COREML_YOLO_H
 
-#import <Vision/Vision.h>
 #include <opencv2/opencv.hpp>
 #include <vector>
 
 struct MlContainer {
-	VNCoreMLModel* model;
+	// Using void* to hold the model makes the struct C-compatible
+	// and hides the Objective-C details from the header.
+	void* model;
 };
 
 struct Detection {
@@ -15,8 +16,7 @@ struct Detection {
 	float confidence;
 };
 
-std::vector<Detection>
-perform_inference(MlContainer* container, cv::InputArray image, float conf_threshold, float nms_threshold);
+std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray image, float conf_threshold, float nms_threshold);
 
 extern "C" {
 struct MlContainer* initialize_model(const char* model_path);

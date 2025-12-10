@@ -1,8 +1,9 @@
-#import "coreml_yolo.h"
+#include "coreml_yolo.h"
 #include <chrono>
 #include <opencv2/dnn.hpp>
 #include "print.h"
 #import <CoreML/CoreML.h>
+#import <Vision/Vision.h>
 #import <Foundation/Foundation.h>
 
 // Helper function to convert cv::Mat to CVPixelBufferRef
@@ -45,9 +46,6 @@ CVPixelBufferRef matToCVPixelBuffer(const cv::Mat& mat) {
 
 
 MlContainer* initialize_model(const char* model_path){
-    MlContainer* container = new MlContainer;
-    container->model = nil;
-
     NSString* modelPath = [NSString stringWithUTF8String:model_path];
     NSURL* modelURL = [NSURL fileURLWithPath:modelPath];
     NSError* error = nil;
@@ -56,7 +54,6 @@ MlContainer* initialize_model(const char* model_path){
     NSURL* compiledURL = [MLModel compileModelAtURL:modelURL error:&error];
     if (error) {
         NSLog(@"Error compiling model: %@", error.localizedDescription);
-        delete container;
         return nullptr;
     }
 
@@ -64,7 +61,6 @@ MlContainer* initialize_model(const char* model_path){
     MLModel* mlModel = [MLModel modelWithContentsOfURL:compiledURL error:&error];
     if (!mlModel || error) {
         NSLog(@"Error loading model: %@", error.localizedDescription);
-        delete container;
         return nullptr;
     }
 
@@ -72,11 +68,14 @@ MlContainer* initialize_model(const char* model_path){
     VNCoreMLModel* visionModel = [VNCoreMLModel modelForMLModel:mlModel error:&error];
     if (!visionModel || error) {
         NSLog(@"Error creating Vision model: %@", error.localizedDescription);
-        delete container;
         return nullptr;
     }
 
-    container->model = visionModel;
+    MlContainer* container = new MlContainer;
+    // Bridge the Objective-C model object to a C pointer and retain it.
+    // This transfers ownership to the caller of this function.
+    container->model = (__bridge_retained void*)visionModel;
+    
     return container;
 }
 
@@ -84,6 +83,7 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
     if (!container || !container->model) {
         return {};
     }
+    print_message("Start inference ....");
 
     using namespace std::chrono;
 	const int INPUT_WIDTH = 640;
@@ -110,8 +110,10 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
     __block NSArray* observations = @[];
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
 
+    // Bridge the C pointer back to an Objective-C object without transferring ownership.
+    VNCoreMLModel* visionModel = (__bridge VNCoreMLModel*)container->model;
     // Create a Vision request
-    VNCoreMLRequest* request = [[VNCoreMLRequest alloc] initWithModel:container->model completionHandler:^(VNRequest * _Nonnull req, NSError * _Nullable err) {
+    VNCoreMLRequest* request = [[VNCoreMLRequest alloc] initWithModel:visionModel completionHandler:^(VNRequest * _Nonnull req, NSError * _Nullable err) {
         if (err) {
             NSLog(@"Inference error: %@", err.localizedDescription);
         } else {
@@ -214,8 +216,14 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
 }
 
 void shutdown_model(MlContainer* container){
-    if(container && container->model){
-        container->model = nil;
+    if (container) {
+        if (container->model) {
+            // This transfers ownership of the model back to ARC, which will then
+            // release the object, decrementing its retain count.
+            id model = (__bridge_transfer id)container->model;
+            model = nil;
+            container->model = nil;
+        }
         delete container;
     }
 }

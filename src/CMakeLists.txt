@@ -44,7 +44,7 @@ set(SOURCES
   # "onnx_ffi.cpp"
 )
 if(IOS OR APPLE)
-  # enable_language(OBJC OBJCXX)
+  enable_language(OBJC OBJCXX)
   list(APPEND SOURCES "coreml_yolo.mm" "coreml_ffi.mm")
 else()
   list(APPEND SOURCES "ncnn_yolo.cpp" "ncnn_ffi.cpp")
@@ -86,6 +86,7 @@ if(APPLE OR IOS)
     # XCODE_ATTRIBUTE_ENABLE_BITCODE "NO"  # 若 iOS >= 15 可省略
     # XCODE_ATTRIBUTE_GCC_SYMBOLS_PRIVATE_EXTERN "NO"
   )
+  target_include_directories(yolo_ffi PRIVATE ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks)
 endif()
 
 target_compile_definitions(yolo_ffi PUBLIC DART_SHARED_LIB)
