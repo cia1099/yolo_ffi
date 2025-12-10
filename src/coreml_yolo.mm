@@ -53,23 +53,24 @@ MlContainer* initialize_model(const char* model_path){
     // Compile the model if it's not already compiled
     NSURL* compiledURL = [MLModel compileModelAtURL:modelURL error:&error];
     if (error) {
-        NSLog(@"Error compiling model: %@", error.localizedDescription);
+        print_message([[NSString stringWithFormat:@"Error compiling model: %@", error.localizedDescription] UTF8String]);
         return nullptr;
     }
 
     // Load the compiled model
     MLModel* mlModel = [MLModel modelWithContentsOfURL:compiledURL error:&error];
     if (!mlModel || error) {
-        NSLog(@"Error loading model: %@", error.localizedDescription);
+        print_message([[NSString stringWithFormat:@"Error loading model: %@", error.localizedDescription] UTF8String]);
         return nullptr;
     }
 
     // Create a Vision model from the CoreML model
     VNCoreMLModel* visionModel = [VNCoreMLModel modelForMLModel:mlModel error:&error];
     if (!visionModel || error) {
-        NSLog(@"Error creating Vision model: %@", error.localizedDescription);
+        print_message([[NSString stringWithFormat:@"Error creating Vision model: %@", error.localizedDescription] UTF8String]);
         return nullptr;
     }
+    [visionModel retain];
 
     MlContainer* container = new MlContainer;
     // Bridge the Objective-C model object to a C pointer and retain it.
@@ -83,7 +84,6 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
     if (!container || !container->model) {
         return {};
     }
-    print_message("Start inference ....");
 
     using namespace std::chrono;
 	const int INPUT_WIDTH = 640;
@@ -115,7 +115,7 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
     // Create a Vision request
     VNCoreMLRequest* request = [[VNCoreMLRequest alloc] initWithModel:visionModel completionHandler:^(VNRequest * _Nonnull req, NSError * _Nullable err) {
         if (err) {
-            NSLog(@"Inference error: %@", err.localizedDescription);
+            print_message([[NSString stringWithFormat:@"Inference error: %@", err.localizedDescription] UTF8String]);
         } else {
             observations = req.results;
         }
@@ -127,7 +127,7 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
     VNImageRequestHandler* handler = [[VNImageRequestHandler alloc] initWithCVPixelBuffer:pixelBuffer options:@{}];
     [handler performRequests:@[request] error:&error];
     if (error) {
-        NSLog(@"Error performing request: %@", error.localizedDescription);
+        print_message([[NSString stringWithFormat:@"Error performing request: %@", error.localizedDescription] UTF8String]);
         CVPixelBufferRelease(pixelBuffer);
         return {};
     }
@@ -143,7 +143,6 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
     // Post-processing
     tic = high_resolution_clock::now();
     if (observations.count == 0) {
-        NSLog(@"No observations found.");
         return {};
     }
 
@@ -151,7 +150,7 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
     MLMultiArray* multiArray = rawOutput.featureValue.multiArrayValue;
 
     if (!multiArray) {
-        NSLog(@"Model output is not an MLMultiArray.");
+        print_message("Model output is not an MLMultiArray.");
         return {};
     }
 
@@ -221,7 +220,8 @@ void shutdown_model(MlContainer* container){
             // This transfers ownership of the model back to ARC, which will then
             // release the object, decrementing its retain count.
             id model = (__bridge_transfer id)container->model;
-            model = nil;
+            [model release];
+            // model = nil;
             container->model = nil;
         }
         delete container;

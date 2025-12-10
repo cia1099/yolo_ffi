@@ -1,25 +1,20 @@
 #include "coreml_yolo.h"
 #include "print.h"
 #include "yolo_ffi.h"
-// #import <Foundation/Foundation.h>
 
 // Global pointer to the session container.
 static struct MlContainer* mlmodel_container = nullptr;
 
 extern "C" {
 FFI_PLUGIN_EXPORT void load_model(const char* model_path) {
-	// dispatch_async(dispatch_get_global_queue(0, 0), ^{
-	// @autoreleasepool {
 	// If a model is already loaded, close it before loading a new one.
 	if (mlmodel_container) {
 		shutdown_model(mlmodel_container);
 	}
 	mlmodel_container = initialize_model(model_path);
-	// }});
 }
 
 FFI_PLUGIN_EXPORT DetectionResult yolo_detect(uint8_t* image_data, int height, int width, float conf_threshold, float nms_threshold) {
-	// dispatch_async(dispatch_get_global_queue(0, 0), ^{@autoreleasepool{
 	if (!mlmodel_container || !mlmodel_container->model) {
 		print_message("model load fail");
 		return {nullptr, 0};
@@ -28,12 +23,6 @@ FFI_PLUGIN_EXPORT DetectionResult yolo_detect(uint8_t* image_data, int height, i
 	// Create a cv::Mat from the raw image data without copying.
 	// The data is expected to be in RGBA format.
 	cv::Mat image(height, width, CV_8UC4, image_data);
-	print_message("we have model");
-	// @autoreleasepool{
-	// 	NSLog(@"model is: %@", "shit");
-	// }
-	// shutdown_model(mlmodel_container);
-	return {nullptr, 0};
 
 	std::vector<Detection> detections = perform_inference(mlmodel_container, image, conf_threshold, nms_threshold);
 
@@ -56,17 +45,13 @@ FFI_PLUGIN_EXPORT DetectionResult yolo_detect(uint8_t* image_data, int height, i
 	}
 
 	return {bboxes, num_detections};
-	// }});
 }
 
 FFI_PLUGIN_EXPORT void close_model() {
-	// dispatch_async(dispatch_get_global_queue(0, 0), ^{
-	// @autoreleasepool {
 	if (mlmodel_container) {
 		shutdown_model(mlmodel_container);
 		mlmodel_container = nullptr;
 	}
-	// }});
 }
 
 const char* get_model_input_name() {
