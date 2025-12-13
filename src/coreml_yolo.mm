@@ -49,6 +49,10 @@ MlContainer* initialize_model(const char* model_path){
     NSString* modelPath = [NSString stringWithUTF8String:model_path];
     NSURL* modelURL = [NSURL fileURLWithPath:modelPath];
     NSError* error = nil;
+    // Set best config for MLModel
+    MLModelConfiguration* config = [MLModelConfiguration new];
+    //ref. https://developer.apple.com/documentation/coreml/mlcomputeunits?language=objc
+    config.computeUnits = MLComputeUnitsAll;
 
     // Compile the model if it's not already compiled
     NSURL* compiledURL = [MLModel compileModelAtURL:modelURL error:&error];
@@ -58,7 +62,7 @@ MlContainer* initialize_model(const char* model_path){
     }
 
     // Load the compiled model
-    MLModel* mlModel = [MLModel modelWithContentsOfURL:compiledURL error:&error];
+    MLModel* mlModel = [MLModel modelWithContentsOfURL:compiledURL configuration:config error:&error];
     if (!mlModel || error) {
         print_message([[NSString stringWithFormat:@"Error loading model: %@", error.localizedDescription] UTF8String]);
         return nullptr;

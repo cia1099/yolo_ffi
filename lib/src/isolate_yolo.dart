@@ -124,6 +124,9 @@ void _startRemoteIsolate(SendPort output) async {
     final input = inputs.pop();
     if (input == null) {
       await Future.delayed(const Duration(milliseconds: 100));
+      if (inputs.isEmpty) {
+        output.send(<BoundingBox>[]);
+      }
       continue;
     }
 

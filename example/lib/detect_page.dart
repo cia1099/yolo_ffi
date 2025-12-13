@@ -69,27 +69,25 @@ class _DetectPageState extends State<DetectPage> {
       // print(
       //   "\x1b[32mDart convert = ${dartConvert}ms, FFI convert = ${ffiConvert}ms\x1b[0m",
       // );
-      streamController.add(frame);
       if (isDetect) {
         final infSw = Stopwatch()..start();
         if (isAndroid) {
           iYolo(await frame.androidResize(640, 640));
           // boxes << await yoloModel(await frame.androidResize(640, 640));
         } else {
-          // iYolo(frame);
-          iYolo.noCopyInfer(
-            rgba: converter.rgba,
-            height: frame.height,
-            width: frame.width,
-          );
+          iYolo(frame);
+          // iYolo.noCopyInfer(
+          //   rgba: converter.rgba,
+          //   height: frame.height,
+          //   width: frame.width,
+          // );
           // boxes << await yoloModel(frame);
         }
         debugPrint(
           "\x1b[32mElapsed time: infer = ${(infSw..stop()).elapsedMilliseconds}ms\x1b[0m",
         );
-      } else if (boxes.isNotEmpty) {
-        boxes << [];
       }
+      streamController.add(frame);
     });
   });
   final streamController = StreamController<ui.Image>();
