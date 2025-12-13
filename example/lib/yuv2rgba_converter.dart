@@ -96,4 +96,6 @@ class YUV2RGBAConverter {
 
     return completer.future;
   }
+
+  Uint8List get rgba => _rgbaBuffer ?? Uint8List(0);
 }

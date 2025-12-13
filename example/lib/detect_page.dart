@@ -76,7 +76,12 @@ class _DetectPageState extends State<DetectPage> {
           iYolo(await frame.androidResize(640, 640));
           // boxes << await yoloModel(await frame.androidResize(640, 640));
         } else {
-          iYolo(frame);
+          // iYolo(frame);
+          iYolo.noCopyInfer(
+            rgba: converter.rgba,
+            height: frame.height,
+            width: frame.width,
+          );
           // boxes << await yoloModel(frame);
         }
         debugPrint(

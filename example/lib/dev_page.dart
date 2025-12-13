@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
@@ -21,9 +22,12 @@ class _DevPageState extends State<DevPage> {
   final boxes = PaintingBoxes();
   Timer? timer;
   final streamController = StreamController<ui.Image>();
+  Uint8List? buffer;
   late final image = dartDecodeImage("assets/bus.jpg", context).then((img) {
     streamController.add(img);
-    return img;
+    // img.toByteData().then((data) => buffer ??= data?.buffer.asUint8List());
+    return img
+      ..toByteData().then((data) => buffer ??= data?.buffer.asUint8List());
   });
 
   @override
@@ -78,7 +82,16 @@ class _DevPageState extends State<DevPage> {
               onPressed: () async {
                 timer?.cancel();
                 final sw = Stopwatch()..start();
-                boxes << await ortYolo(await image);
+                if (buffer == null) {
+                  boxes << await ortYolo(await image);
+                } else {
+                  boxes <<
+                      ortYolo.infer(
+                        rgba: buffer!,
+                        height: (await image).height,
+                        width: (await image).width,
+                      );
+                }
                 // print("\x1b[43mDetect objects: ${boxes.length}\x1b[0m");
                 debugPrint(
                   "\x1b[33mElapsed time: ${(sw..stop()).elapsedMilliseconds}ms\x1b[0m",

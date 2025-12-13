@@ -21,6 +21,8 @@ FFI_PLUGIN_EXPORT DetectionResult yolo_detect(uint8_t* image_data, int height, i
 	// Create a cv::Mat from the raw image data without copying.
 	// The data is expected to be in RGBA format.
 	cv::Mat image(height, width, CV_8UC4, image_data);
+	// on Android need to rotate 90 clockwise from raw camera data
+	// cv::rotate(image, image, cv::ROTATE_90_CLOCKWISE);
 
 	std::vector<Detection> detections = run_ncnn(net_container, image, conf_threshold, nms_threshold);
 

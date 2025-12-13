@@ -76,11 +76,31 @@ class IsolateYolo {
     }
   }
 
+  Future<void> noCopyInfer({
+    required Uint8List rgba,
+    required int height,
+    required int width,
+    double confThreshold = .25,
+    double nmsThreshold = .45,
+  }) async {
+    if (await _isolateReady.future) {
+      _input.send(
+        _YoloInput(
+          imageData: rgba,
+          width: width,
+          height: height,
+          confThreshold: confThreshold,
+          nmsThreshold: nmsThreshold,
+        ),
+      );
+    }
+  }
+
   void dispose() {
     _input.send(null);
     _outputWatcher.close();
-    _cppConsole?.cancel();
     _isolate?.kill(); //(priority: Isolate.immediate);
+    _cppConsole?.cancel();
   }
 }
 
@@ -121,28 +141,28 @@ void _startRemoteIsolate(SendPort output) async {
 
 class FixedQueue<T> {
   final int maxSize;
-  final ListQueue<T> _queue;
+  final ListQueue<T> queue;
 
-  FixedQueue(this.maxSize) : _queue = ListQueue<T>();
+  FixedQueue(this.maxSize) : queue = ListQueue<T>();
 
   void add(T value) {
-    if (_queue.length >= maxSize) {
-      _queue.removeFirst(); // 移除最旧的元素
+    if (queue.length >= maxSize) {
+      queue.removeFirst(); // 移除最旧的元素
     }
-    _queue.addLast(value); // 加入新元素
+    queue.addLast(value); // 加入新元素
   }
 
-  T? pop() => _queue.isNotEmpty ? _queue.removeFirst() : null;
-  void clear() => _queue.clear();
+  T? pop() => queue.isNotEmpty ? queue.removeFirst() : null;
+  void clear() => queue.clear();
 
-  List<T> toList() => _queue.toList();
+  List<T> toList() => queue.toList();
 
-  int get length => _queue.length;
-  bool get isEmpty => _queue.isEmpty;
-  bool get isNotEmpty => _queue.isNotEmpty;
+  int get length => queue.length;
+  bool get isEmpty => queue.isEmpty;
+  bool get isNotEmpty => queue.isNotEmpty;
 
   @override
-  String toString() => _queue.toString();
+  String toString() => queue.toString();
 }
 
 class _YoloInput {

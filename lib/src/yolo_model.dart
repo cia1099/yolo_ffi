@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/services.dart';
 
 import 'bridge_ffi.dart';
 
@@ -64,6 +65,22 @@ class YoloModel {
   }) {
     return detect(
       image: image,
+      confThreshold: confThreshold,
+      nmsThreshold: nmsThreshold,
+    );
+  }
+
+  List<BoundingBox> infer({
+    required Uint8List rgba,
+    required int height,
+    required int width,
+    double confThreshold = .25,
+    double nmsThreshold = .45,
+  }) {
+    return yoloDetect(
+      imageData: rgba,
+      height: height,
+      width: width,
       confThreshold: confThreshold,
       nmsThreshold: nmsThreshold,
     );

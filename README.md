@@ -216,7 +216,7 @@ cmake --build build --config Release -t ncnnoptimize -j$(nproc)
 # CoreML
 * export from ultralytics
 ```
-pip install ultralytics
+pip install ultralytics coremltools
 yolo export model=yolo11n.pt format=mlmodel
 ```
 [see more support export formats](https://docs.ultralytics.com/yolov5/tutorials/model_export/#supported-export-formats)
