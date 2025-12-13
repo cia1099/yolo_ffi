@@ -107,35 +107,28 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
 
     // Inference
     tic = high_resolution_clock::now();
-    __block NSArray* observations = @[];
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-
     // Bridge the C pointer back to an Objective-C object without transferring ownership.
     VNCoreMLModel* visionModel = (__bridge VNCoreMLModel*)container->model;
     // Create a Vision request
-    VNCoreMLRequest* request = [[VNCoreMLRequest alloc] initWithModel:visionModel completionHandler:^(VNRequest * _Nonnull req, NSError * _Nullable err) {
-        if (err) {
-            print_message([[NSString stringWithFormat:@"Inference error: %@", err.localizedDescription] UTF8String]);
-        } else {
-            observations = req.results;
-        }
-        dispatch_semaphore_signal(semaphore);
-    }];
-    
-    // Create a handler and perform the request
-    NSError* error = nil;
-    VNImageRequestHandler* handler = [[VNImageRequestHandler alloc] initWithCVPixelBuffer:pixelBuffer options:@{}];
-    [handler performRequests:@[request] error:&error];
-    if (error) {
-        print_message([[NSString stringWithFormat:@"Error performing request: %@", error.localizedDescription] UTF8String]);
+    VNCoreMLRequest* request = [[VNCoreMLRequest alloc] initWithModel:visionModel];
+    if (!request) {
+        print_message("Failed to create VNCoreMLRequest.");
         CVPixelBufferRelease(pixelBuffer);
         return {};
     }
-
-    // Wait for the completion handler to finish
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    
+    // Create a handler and perform the synchronous request
+    NSError* error = nil;
+    VNImageRequestHandler* handler = [[VNImageRequestHandler alloc] initWithCVPixelBuffer:pixelBuffer options:@{}];
+    [handler performRequests:@[request] error:&error];
     CVPixelBufferRelease(pixelBuffer);
-    dispatch_release(semaphore);
+    if (error) {
+        print_message([[NSString stringWithFormat:@"Error performing request: %@", error.localizedDescription] UTF8String]);
+        return {};
+    }
+
+    // Get the results directly from the request's results property.
+    NSArray* observations = request.results;
 
     toc = high_resolution_clock::now();
 	auto infer_elapsed = duration_cast<milliseconds>(toc - tic);

@@ -3,11 +3,7 @@
 # the plugin to fail to compile for some customers of the plugin.
 cmake_minimum_required(VERSION 3.10)
 
-project(yolo_ffi_library VERSION 0.1.0 LANGUAGES CXX)
-
-if(CMAKE_OSX_SYSROOT MATCHES "iphonesimulator")
-    set(SIMULATOR ON)
-endif()
+project(yolo_ffi_library VERSION 1.0.0 LANGUAGES CXX)
 
 # Set the $LIBRARIES_DIR to point directly to the package config files
 if(ANDROID)
@@ -15,10 +11,9 @@ if(ANDROID)
     set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../../opencv/android/sdk/native/jni/abi-arm64-v8a)
     set(ncnn_DIR ${CMAKE_SOURCE_DIR}/../../ncnn/android/lib/cmake/ncnn)
 elseif(APPLE OR IOS)
-  if(SIMULATOR)
+  if(CMAKE_OSX_SYSROOT MATCHES "iphonesimulator")
     set(IOS_DIR sim_ios)
     # set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../ort/sim_ios/lib/cmake/onnxruntime)
-    # set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../../opencv/sim_ios/lib/cmake/opencv4)
   else()
     set(IOS_DIR ios)
   endif()
@@ -50,19 +45,19 @@ else()
   list(APPEND SOURCES "ncnn_yolo.cpp" "ncnn_ffi.cpp")
 endif()
 
-if((IOS OR APPLE) AND NOT SIMULATOR)
-  set(LIB_TYPE STATIC)
-else()
+if(ANDROID)
   set(LIB_TYPE SHARED)
+else()
+  set(LIB_TYPE STATIC)
 endif()
 add_library(yolo_ffi ${LIB_TYPE} ${SOURCES})
 
 # target_link_libraries(yolo_ffi ${OpenCV_LIBS} onnxruntime::onnxruntime)
 target_link_libraries(yolo_ffi ${OpenCV_LIBS})
-if(IOS OR APPLE)
-  target_link_libraries(yolo_ffi ${FOUNDATION} ${COREML} ${VISION} ${COREVIDEO})
-else()
+if(ANDROID)
   target_link_libraries(yolo_ffi ncnn)
+else()
+  target_link_libraries(yolo_ffi ${FOUNDATION} ${COREML} ${VISION} ${COREVIDEO})
 endif()
 set_target_properties(yolo_ffi PROPERTIES
 # PUBLIC_HEADER "yolo_ffi.h;yolo_onnx.h"

@@ -30,7 +30,7 @@ A new Flutter FFI plugin project.
   ]
   ## For iOS device
   s.vendored_libraries = [
-    'lib/libonnxruntime.1.23.2.dylib',
+    # 'lib/libonnxruntime.1.23.2.dylib',
     'lib/libyolo_ffi.a'
   ]
   ## ls example/build/ios/iphoneos/Runner.app/Frameworks # Check the .dylib in here.

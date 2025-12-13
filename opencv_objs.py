@@ -11,12 +11,14 @@ if __name__ == "__main__":
     dirs = [
         folder.path
         for folder in os.scandir(cv_build_dir)
-        if folder.is_dir() and "opencv" in folder.name
+        if folder.is_dir() and ".build" in folder.name
     ]
     # print("\n".join(dirs))
     obj_files = []
     for folder in dirs:
-        for parent, _, files in os.walk(os.path.join(folder, "Release-iphoneos")):
+        for parent, _, files in os.walk(
+            os.path.join(folder, Path(builded_lib).resolve().parent.name)
+        ):
             if "arm64" == Path(parent).name:
                 obj_files += [
                     os.path.join(parent, file)
@@ -27,4 +29,4 @@ if __name__ == "__main__":
     # print("\n".join(obj_files))
     cmd = f"ar -rcs {builded_lib} {' '.join(obj_files)}"
     os.system(cmd)
-    # os.system(f"cp {builded_lib} ios/lib")
+    os.system(f"cp {builded_lib} ios/lib")
