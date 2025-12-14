@@ -46,6 +46,7 @@ CVPixelBufferRef matToCVPixelBuffer(const cv::Mat& mat) {
 
 
 MlContainer* initialize_model(const char* model_path){
+@autoreleasepool {
     NSString* modelPath = [NSString stringWithUTF8String:model_path];
     NSURL* modelURL = [NSURL fileURLWithPath:modelPath];
     NSError* error = nil;
@@ -74,7 +75,7 @@ MlContainer* initialize_model(const char* model_path){
         print_message([[NSString stringWithFormat:@"Error creating Vision model: %@", error.localizedDescription] UTF8String]);
         return nullptr;
     }
-    [visionModel retain];
+    // [visionModel retain];
 
     MlContainer* container = new MlContainer;
     // Bridge the Objective-C model object to a C pointer and retain it.
@@ -82,9 +83,10 @@ MlContainer* initialize_model(const char* model_path){
     container->model = (__bridge_retained void*)visionModel;
     
     return container;
-}
+}}
 
 std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray image, float conf_threshold, float nms_threshold){
+@autoreleasepool {
     if (!container || !container->model) {
         return {};
     }
@@ -114,6 +116,7 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
     // Bridge the C pointer back to an Objective-C object without transferring ownership.
     VNCoreMLModel* visionModel = (__bridge VNCoreMLModel*)container->model;
     // Create a Vision request
+    // VNCoreMLRequest* request = [[[VNCoreMLRequest alloc] initWithModel:visionModel] autorelease];
     VNCoreMLRequest* request = [[VNCoreMLRequest alloc] initWithModel:visionModel];
     if (!request) {
         print_message("Failed to create VNCoreMLRequest.");
@@ -209,7 +212,7 @@ std::vector<Detection> perform_inference(MlContainer* container, cv::InputArray 
 	print_message(buffer);
 
     return detections;
-}
+}}
 
 void shutdown_model(MlContainer* container){
     if (container) {
@@ -217,8 +220,8 @@ void shutdown_model(MlContainer* container){
             // This transfers ownership of the model back to ARC, which will then
             // release the object, decrementing its retain count.
             id model = (__bridge_transfer id)container->model;
-            [model release];
-            // model = nil;
+            // [model release];
+            model = nil;
             container->model = nil;
         }
         delete container;

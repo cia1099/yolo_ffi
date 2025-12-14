@@ -72,6 +72,7 @@ if(APPLE OR IOS)
     OUTPUT_NAME "yolo_ffi"
     # FRAMEWORK TRUE
     MACOSX_FRAMEWORK_IDENTIFIER "com.cia1099.yoloFfi"
+    XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
     # INSTALL_RPATH "@rpath"
     # avoid symbol strip
     # MACH_O_TYPE "mh_dylib"

@@ -27,6 +27,27 @@ grep -r "Eigen3" build/CMakeCache.txt
 s.vendored_libraries = 'lib/libyolo_ffi.a'
 "OTHER_LDFLAGS" => "-force_load $(PODS_TARGET_SRCROOT)/lib/libyolo_ffi.a",
 ```
+* 用CMake编译ObjC预设是没有开启ARC的，需要主动开启，不要以为代码有ARC的管理，预设是都没有的，要自己主动管理任何`alloc`, `new`, `copy`和`mutableCopy`的对象，管理`retain`和`release`，但开启了ARC后，这些方法就会被编译器禁用了。\
+开启ARC：
+```cmake
+set_target_properties(yolo_ffi PROPERTIES
+    XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
+  )
+```
+注意：这个方法只在生成 Xcode 工程时有效，对 Makefile 或 Ninja 等其他 generator 不起作用。
+所以其实还是所有对象都用`autorelease`最省事，因为从SDK返回的对象也不知道是不是从`alloc`来的，所以调用SDK基本都会包一层`@autoreleasepool{}`作用域。 
+
+  * 通过源文件级别开启 ARC（可选）
+如果你只想对某些 .m 文件开启 ARC，可以在 `set_source_files_properties` 里指定：
+```cmake
+set_source_files_properties(
+    MyFile.m
+    PROPERTIES
+    COMPILE_FLAGS "-fobjc-arc"
+)
+```
+`-fobjc-arc` 是 Clang 的编译器选项，强制对该文件使用 ARC。\
+可以针对部分文件启用 ARC，而不影响整个 target。
 
 ## Getting Started
 ### Build iOS
