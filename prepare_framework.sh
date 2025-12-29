@@ -8,8 +8,8 @@ BUILD_DIR="build"
 SRC_DIR="src"
 TARGET_OS="13.0"
 ARCHS="arm64"
-PLATFORM_NAME="iphoneos"
-# PLATFORM_NAME="iphonesimulator"
+# PLATFORM_NAME="iphoneos"
+PLATFORM_NAME="iphonesimulator"
 
 # --- Clean up previous builds ---
 echo "🧹 Cleaning up previous builds..."

@@ -1,6 +1,36 @@
 #include "print.h"
 
-#ifdef __ANDROID__
+#ifdef __APPLE__
+
+#include <objc/runtime.h>
+#include <stdio.h>
+
+// Defines the function pointer type for the Objective-C method call.
+typedef void (*IMP_printMessage)(Class, SEL, const char* message);
+
+/**
+ * @brief Sends a message to the iOS platform via the Objective-C runtime.
+ *
+ * This function calls a class method `printMessage:` on the `YoloFfiPlugin`
+ * class. The Objective-C implementation of this method is expected to forward
+ * the message to Dart using an FlutterEventChannel.
+ *
+ * Note: The class name "YoloFfiPlugin" is assumed. You may need to change this
+ * to match your actual iOS plugin class name.
+ *
+ * @param message The string message to send.
+ */
+void print_message(const char* message) {
+	Class pluginClass = objc_getClass("YoloFfiPlugin");
+
+	SEL selector = sel_registerName("printMessage:");
+
+	IMP_printMessage imp = (IMP_printMessage)method_getImplementation(class_getClassMethod(pluginClass, selector));
+
+	imp(pluginClass, selector, message);
+}
+
+#else  //__ANDROID__
 
 #include <jni.h>
 
@@ -104,60 +134,5 @@ Java_com_cia1099_yolo_1ffi_YoloFfiPlugin_setup(JNIEnv* env, jobject /* thiz */, 
 }
 
 }  // extern "C"
-
-#else  // iOS
-
-#include <objc/runtime.h>
-#include <stdio.h>
-
-// Defines the function pointer type for the Objective-C method call.
-typedef void (*IMP_printMessage)(Class, SEL, const char* message);
-
-/**
- * @brief Sends a message to the iOS platform via the Objective-C runtime.
- *
- * This function calls a class method `printMessage:` on the `YoloFfiPlugin`
- * class. The Objective-C implementation of this method is expected to forward
- * the message to Dart using an FlutterEventChannel.
- *
- * Note: The class name "YoloFfiPlugin" is assumed. You may need to change this
- * to match your actual iOS plugin class name.
- *
- * @param message The string message to send.
- */
-void print_message(const char* message) {
-	Class pluginClass = objc_getClass("YoloFfiPlugin");
-
-	SEL selector = sel_registerName("printMessage:");
-
-	IMP_printMessage imp = (IMP_printMessage)method_getImplementation(class_getClassMethod(pluginClass, selector));
-
-	imp(pluginClass, selector, message);
-
-	// MARK:- Debug print
-	// Class pluginClass = objc_getClass("YoloFfiPlugin");
-	// if (!pluginClass) {
-	// 	printf("ERROR: objc_getClass(\"YoloFfiPlugin\") returned nil.\n");
-	// 	return;
-	// } else {
-	// 	printf("SUCCESS: Found class YoloFfiPlugin.\n");
-	// }
-
-	// SEL selector = sel_registerName("printMessage:");
-	// if (!selector) {
-	// 	printf("ERROR: sel_registerName(\"printMessage:\") returned nil.\n");
-	// 	return;
-	// }
-
-	// IMP_printMessage printMessageImp = (IMP_printMessage)method_getImplementation(class_getClassMethod(pluginClass, selector));
-	// if (!printMessageImp) {
-	// 	printf("ERROR: method_getImplementation for printMessage: returned nil.\n");
-	// 	return;
-	// } else {
-	// 	printf("SUCCESS: Found method implementation for printMessage:.\n");
-	// }
-
-	// printMessageImp(pluginClass, selector, message);
-}
 
 #endif

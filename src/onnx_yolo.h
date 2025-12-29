@@ -3,7 +3,7 @@
 
 #ifdef __cplusplus
 #include <onnxruntime_cxx_api.h>
-#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
 #include <vector>
 
 // A struct to hold the ONNX Runtime session and environment objects.

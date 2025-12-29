@@ -2,7 +2,7 @@
 #define NCNN_YOLO_H
 
 #include <net.h>
-#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
 #include <vector>
 
 struct NcnnContainer {

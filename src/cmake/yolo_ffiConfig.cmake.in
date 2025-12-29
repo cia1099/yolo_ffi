@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+# Find dependencies
+find_dependency(OpenCV REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/yolo_ffiTargets.cmake")
+check_required_components(yolo_ffi)

@@ -243,6 +243,12 @@ yolo export model=yolo11n.pt format=mlmodel
 [see more support export formats](https://docs.ultralytics.com/yolov5/tutorials/model_export/#supported-export-formats)
 
 ---
+# Upload test flight
+后面的`-p`不知道是干啥的
+```sh
+flutter build ipa
+xcrun altool --upload-app -t ios -f build/ios/ipa/*.ipa -u cia1099@icloud.com -p ojly-cxow-jazz-qtvb
+```
 
 
 ### FFI tutorial
@@ -321,6 +327,86 @@ To avoid writing these by hand, they are generated from the header file
 Regenerate the bindings by running `dart run ffigen --config ffigen.yaml`.
 
 
+---
+更新简历
+
+边缘设备的实时目标检测实践
+内容：
+1. 部署YOLO模型到手机设备，完成实时目标检测，无损主线程画面刷新和用户操作控制的屏幕
+2. 使用NDK和CMake去跨平台编译ONNX，OpenCV，NCNN和MNN二进制函数库，供安卓应用链接和调用
+3. 混合Object-C和C++混合编译以CoreML框架的iOS平台函数库，直接以FFi接口取代MethodChannel的通信，减少Dart和原生之间通信的序列化和反序列化的耗时开销，避免跨语言之间存在的资料拷贝造成的延迟，统一在C++的环境下完成推理的所有动作，图像前处理，推理，推理结果后处理完成后，再回调给Dart端
+4. 优化资料类型转换和非必要拷贝操作，都在相同的内存空间下操作数据，不做额外不必要的配置新内存，提升CPU捕获快取的成功率，保持内存空间的连续性
+5. 分离UI和模型推理的逻辑，利用Isolate独立运行模型的推理，不阻塞主线程的UI刷新，用无锁的queue保存相机传入的图像资料，保证模型推理不阻塞相机的串流影像显示在主UI上
+
+业绩：
+部署安卓和苹果的平台上执行实时的目标检测，达到60 FPS无损UI刷新画面的多工性，在边缘设备上可以记录每一画面的目标位置，不需要远程服务器负载任何推理程序
+
+---
+#### GPT modified
+边缘设备实时目标检测系统（Flutter / C++ / CoreML / NDK）
+
+角色： Flutter 资深工程师 / 跨平台性能优化负责人
+技术栈： Flutter、Dart Isolate、C++17、NDK、CMake、ONNX、NCNN、MNN、OpenCV、CoreML、Objective-C++、FFI
+
+项目概述：
+设计并实现一套 高性能、低延迟的边缘端实时目标检测系统，在 Android 与 iOS 设备上以 Flutter 作为统一 UI 框架，通过原生 C++ 推理引擎与零拷贝内存设计，在不牺牲 UI 流畅度的前提下，实现 60 FPS 实时目标检测，完全脱离云端推理依赖。
+
+核心技术实现：
+1. 跨平台高性能推理架构设计
+* 将 YOLO 系列模型部署至移动端边缘设备，统一在 C++ 推理层完成图像前处理、模型推理与后处理，避免多语言重复实现与性能损耗
+
+* 针对 Android / iOS 平台差异，抽象统一的推理接口层，提升系统可维护性与可扩展性
+
+2. Flutter ↔ 原生通信性能重构（FFI 替代 MethodChannel）
+
+* 在 iOS 端采用 Objective-C++ + CoreML 混合编译，直接暴露 C ABI 给 Dart FFI
+
+* 完全绕过 MethodChannel 的消息编解码与对象重建流程，避免 Dart VM 与原生层之间因序列化、内存复制及类型转换带来的额外开销
+
+* 将推理全流程（preprocess → inference → postprocess）收敛至 C++ 层，仅回传最终结构化结果至 Dart
+
+3. 极致内存管理与零拷贝优化
+
+* 重构图像与张量数据结构，复用同一块连续内存区域完成图像采集、前处理与推理
+
+* 避免不必要的 malloc / free 与中间 buffer 分配，显著降低 GC 与内存抖动
+
+
+4. CPU / GPU / Neural Engine 调度优化
+
+* 在 iOS 端基于 CoreML 的 Compute Units 策略，动态选择 CPU / GPU / Neural Engine，结合OpenCV库，对 ARM 架构优化运算处理图像数据
+
+* 针对不同模型规模与设备性能，评估能耗与延迟表现，平衡实时性与功耗
+
+* Android 端结合 NCNN / MNN 框架和OpenCV库，针对 ARM 架构优化算子执行路径
+
+5. 多线程与并发模型设计（Flutter Isolate）
+
+* 严格分离 UI 与模型推理逻辑
+
+* 使用 Dart Isolate 独立运行推理任务，确保主线程专注于 UI 渲染与用户交互
+
+* 通过 无锁（lock-free）队列 缓存相机帧数据，避免推理阻塞相机串流与画面显示
+
+6. 原生库跨平台构建体系
+
+* 使用 NDK + CMake 构建 Android 平台 ONNX、OpenCV、NCNN、MNN 等原生库
+
+* 通过 Objective-C++ 在同一编译单元内直接调用 Apple 原生 SDK 与 C++ 推理与图像处理库，规避 JNI / FFI / PlatformChannel 等跨层通信模型，减少 ABI 边界、对象封装及内存拷贝带来的性能损耗
+
+* 统一管理编译参数与 ABI，确保在多设备架构下的稳定性与性能一致性
+
+项目成果（Impact）：
+
+1. 在 Android 与 iOS 边缘设备 上实现 60 FPS 实时目标检测，UI 刷新零掉帧
+
+2. 每一帧影像可实时记录目标位置与分类结果，无需依赖任何远程服务器推理
+
+3. Flutter 应用在高负载 AI 推理场景下依然保持流畅交互体验
+
+4. 显著降低跨语言通信开销与内存占用，系统整体延迟大幅下降
+
+5. 架构具备高度可扩展性，可快速替换不同模型与推理后端
 
 
 

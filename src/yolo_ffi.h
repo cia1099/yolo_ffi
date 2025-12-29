@@ -60,5 +60,6 @@ FFI_PLUGIN_EXPORT void free_rgba_buffer(uint8_t* buffer);
 // Forward declare the session container struct.
 struct OrtSessionContainer;
 struct NcnnContainer;
+struct MlContainer;
 
 #endif  // YOLO_FFI_H

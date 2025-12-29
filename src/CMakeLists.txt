@@ -39,7 +39,7 @@ set(SOURCES
   # "onnx_ffi.cpp"
 )
 if(IOS OR APPLE)
-  enable_language(OBJC OBJCXX)
+  enable_language(OBJCXX)
   list(APPEND SOURCES "coreml_yolo.mm" "coreml_ffi.mm")
 else()
   list(APPEND SOURCES "ncnn_yolo.cpp" "ncnn_ffi.cpp")
@@ -52,6 +52,7 @@ else()
 endif()
 add_library(yolo_ffi ${LIB_TYPE} ${SOURCES})
 
+# target_include_directories(yolo_ffi PUBLIC ${OpenCV_INCLUDE_DIRS})
 # target_link_libraries(yolo_ffi ${OpenCV_LIBS} onnxruntime::onnxruntime)
 target_link_libraries(yolo_ffi ${OpenCV_LIBS})
 if(ANDROID)
@@ -60,7 +61,6 @@ else()
   target_link_libraries(yolo_ffi ${FOUNDATION} ${COREML} ${VISION} ${COREVIDEO})
 endif()
 set_target_properties(yolo_ffi PROPERTIES
-# PUBLIC_HEADER "yolo_ffi.h;yolo_onnx.h"
   PUBLIC_HEADER "yolo_ffi.h;print.h"
   OUTPUT_NAME "yolo_ffi"
   # CXX_STANDARD 17
@@ -68,8 +68,6 @@ set_target_properties(yolo_ffi PROPERTIES
 # Used Frameworks to make iOS support multiple Apple devices
 if(APPLE OR IOS)
   set_target_properties(yolo_ffi PROPERTIES
-    PUBLIC_HEADER "yolo_ffi.h;print.h"
-    OUTPUT_NAME "yolo_ffi"
     # FRAMEWORK TRUE
     MACOSX_FRAMEWORK_IDENTIFIER "com.cia1099.yoloFfi"
     XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
@@ -91,3 +89,41 @@ if (ANDROID)
   # Support Android 15 16k page size
   target_link_options(yolo_ffi PRIVATE "-Wl,-z,max-page-size=16384")
 endif()
+
+# MARK:- Install this yolo_ffi library
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+install(TARGETS yolo_ffi
+  EXPORT yolo_ffi_export_set
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT yolo_ffi_export_set
+  FILE yolo_ffiTargets.cmake
+  # NAMESPACE yolo_ffi::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/yolo_ffi
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/yolo_ffiConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+configure_package_config_file(
+  cmake/yolo_ffiConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/yolo_ffiConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/yolo_ffi
+  PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/yolo_ffiConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/yolo_ffiConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/yolo_ffi
+)
