@@ -20,9 +20,10 @@ A new Flutter FFI plugin project.
   s.source           = { :path => '.' }
   s.source_files = [
   'Classes/**/*',
-  'lib/libonnxruntime.1.23.2.dylib'
+  # 'lib/libonnxruntime.1.23.2.dylib'
+  # 'Frameworks/yolo_ffi.xcframework/**/*.{a,h}'
   ]
-  # s.vendored_frameworks = 'Frameworks/yolo_ffi.framework'
+  # s.vendored_frameworks = '$(PODS_TARGET_SRCROOT)/Frameworks/yolo_ffi.xcframework'
   s.prepare_command = 'sh ../prepare_framework.sh'
 
   s.public_header_files = [

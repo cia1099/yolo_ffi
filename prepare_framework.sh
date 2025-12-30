@@ -8,8 +8,8 @@ BUILD_DIR="build"
 SRC_DIR="src"
 TARGET_OS="13.0"
 ARCHS="arm64"
-# PLATFORM_NAME="iphoneos"
-PLATFORM_NAME="iphonesimulator"
+PLATFORM_NAME="iphoneos"
+# PLATFORM_NAME="iphonesimulator"
 
 # --- Clean up previous builds ---
 echo "🧹 Cleaning up previous builds..."
@@ -23,7 +23,7 @@ if [[ "$PLATFORM_NAME" == *"iphonesimulator"* ]]; then
   echo "🚀 Starting build for iOS Simulator..."
   cmake -S "$SRC_DIR" -B "$BUILD_DIR" -G Xcode \
     -DCMAKE_SYSTEM_NAME=iOS \
-    -DCMAKE_OSX_SYSROOT=$(xcode-select -p)/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk \
+    -DCMAKE_OSX_SYSROOT=$PLATFORM_NAME \
     -DCMAKE_OSX_DEPLOYMENT_TARGET="$TARGET_OS" \
     -DCMAKE_OSX_ARCHITECTURES=$ARCHS
 else
@@ -31,7 +31,7 @@ else
   echo "🚀 Starting build for iOS Device..."
   cmake -S "$SRC_DIR" -B "$BUILD_DIR" -G Xcode \
     -DCMAKE_SYSTEM_NAME=iOS \
-    -DCMAKE_OSX_SYSROOT=$(xcode-select -p)/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk \
+    -DCMAKE_OSX_SYSROOT=$PLATFORM_NAME \
     -DCMAKE_OSX_DEPLOYMENT_TARGET="$TARGET_OS" \
     -DCMAKE_OSX_ARCHITECTURES=$ARCHS
 fi
@@ -44,12 +44,6 @@ echo "✅ Build for iOS complete, 📱 Platform name: $PLATFORM_NAME"
 echo "🦾 Merging OpenCV libraries..."
 python3 opencv_objs.py "$BUILD_DIR/Release-$PLATFORM_NAME/libyolo_ffi.a"
 echo "✅ OpenCV libraries merged into libyolo_ffi.a."
-
-# --- Copy merged library to ios/lib ---
-echo "📦 Copying merged library to ios/lib..."
-mkdir -p "ios/lib"
-cp "$BUILD_DIR/Release-$PLATFORM_NAME/libyolo_ffi.a" "ios/lib/libyolo_ffi.a"
-echo "✅ Merged library copied."
 
 
 # --- Prepare final destination ---

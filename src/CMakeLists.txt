@@ -71,6 +71,11 @@ if(APPLE OR IOS)
     # FRAMEWORK TRUE
     MACOSX_FRAMEWORK_IDENTIFIER "com.cia1099.yoloFfi"
     XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
+    # XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED NO  # when build .dylib
+    # XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED NO  # when build .dylib
+    # XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "your team ID"  # for distribute
+    # XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"
+    # XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Distribution"
     # INSTALL_RPATH "@rpath"
     # avoid symbol strip
     # MACH_O_TYPE "mh_dylib"
