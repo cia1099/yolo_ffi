@@ -4,17 +4,15 @@ import os, sys
 if __name__ == "__main__":
     builded_lib = sys.argv[1]
 
-    # if not os.path.isfile(builded_lib):
-    #     raise IsADirectoryError(f"Expected a file, but got a directory: {builded_lib}")
+    if not os.path.isfile(builded_lib):
+        raise IsADirectoryError(f"Expected a file, but got a directory: {builded_lib}")
 
     # MARK:- New school
     cv_dir = "/Users/otto/project/deploy_mobile/cpp_yolo/opencv"
     parent = Path(builded_lib).resolve().parent.name
-    if "iphoneos" in parent:
-        install_dir = "ios"
-    else:
-        install_dir = "sim_ios"
-    cmd = f"libtool -static {builded_lib} {os.path.join(cv_dir,install_dir,'lib/*.a')} -o {os.path.join('ios/lib', Path(builded_lib).name)}"
+    install_dir = "ios" if "iphoneos" in parent else "sim_ios"
+    # cmd = f"libtool -static {builded_lib} {os.path.join(cv_dir,install_dir,'lib/*.a')} -o {os.path.join('ios/lib', Path(builded_lib).name)}"
+    cmd = f"libtool -static {builded_lib} {os.path.join(cv_dir,install_dir,'lib/*.a')} -o {builded_lib}"
     os.system(cmd)
     # print(cmd)
 
@@ -25,7 +23,7 @@ if __name__ == "__main__":
     #     for folder in os.scandir(cv_build_dir)
     #     if folder.is_dir() and ".build" in folder.name
     # ]
-    # print("\n".join(dirs))
+    # # print("\n".join(dirs))
     # obj_files = []
     # for folder in dirs:
     #     for parent, _, files in os.walk(
@@ -38,7 +36,7 @@ if __name__ == "__main__":
     #                 if (Path(parent) / file).is_file() and Path(file).suffix == ".o"
     #             ]
     #             break
-    # print("\n".join(obj_files))
+    # # print("\n".join(obj_files))
     # cmd = f"ar -rcs {builded_lib} {' '.join(obj_files)}"
     # os.system(cmd)
-    # os.system(f"cp {builded_lib} ios/lib")
+    # # os.system(f"cp {builded_lib} ios/lib")

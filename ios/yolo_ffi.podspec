@@ -21,19 +21,18 @@ A new Flutter FFI plugin project.
   s.source_files = [
   'Classes/**/*',
   # 'lib/libonnxruntime.1.23.2.dylib'
-  # 'Frameworks/yolo_ffi.xcframework/**/*.{a,h}'
   ]
-  # s.vendored_frameworks = '$(PODS_TARGET_SRCROOT)/Frameworks/yolo_ffi.xcframework'
   s.prepare_command = 'sh ../prepare_framework.sh'
+  s.vendored_frameworks = '$(PODS_TARGET_SRCROOT)/Frameworks/yolo_ffi.xcframework'
 
   s.public_header_files = [
     'Classes/**/*.h',
   ]
   ## For iOS device
-  s.vendored_libraries = [
-    # 'lib/libonnxruntime.1.23.2.dylib',
-    'lib/libyolo_ffi.a'
-  ]
+  # s.vendored_libraries = [
+  #   # 'lib/libonnxruntime.1.23.2.dylib',
+  #   'lib/libyolo_ffi.a'
+  # ]
   ## ls example/build/ios/iphoneos/Runner.app/Frameworks # Check the .dylib in here.
 
   s.dependency 'Flutter'
@@ -41,12 +40,12 @@ A new Flutter FFI plugin project.
   s.platform = :ios, '13.0'
 
   # Flutter.framework does not contain a i386 slice.
-  s.libraries = ["c++", "z"]
+  # s.libraries = ["c++", "z"]
   s.pod_target_xcconfig = { 
     'DEFINES_MODULE' => 'YES', 
     'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
-    # "OTHER_LDFLAGS" => "-force_load $(PODS_TARGET_SRCROOT)/Frameworks/yolo_ffi.framework/yolo_ffi",
-    "OTHER_LDFLAGS" => "-force_load $(PODS_TARGET_SRCROOT)/lib/libyolo_ffi.a",
+    "OTHER_LDFLAGS[sdk=iphonesimulator*]" => "-lz -force_load $(PODS_TARGET_SRCROOT)/Frameworks/yolo_ffi.xcframework/ios-arm64-simulator/libyolo_ffi.a",
+    "OTHER_LDFLAGS[sdk=iphoneos*]" => "-lz -force_load $(PODS_TARGET_SRCROOT)/Frameworks/yolo_ffi.xcframework/ios-arm64/libyolo_ffi.a",
     'STRIP_STYLE' => 'non-global'
   }
   s.swift_version = '5.0'
