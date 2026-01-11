@@ -4,6 +4,7 @@
 #import <Vision/Vision.h>
 #include <chrono>
 #include <opencv2/dnn.hpp>
+#include <opencv2/imgproc.hpp>
 #include "print.h"
 
 // Helper function to convert cv::Mat to CVPixelBufferRef

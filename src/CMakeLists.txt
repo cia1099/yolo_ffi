@@ -22,7 +22,7 @@ elseif(APPLE OR IOS)
 endif()
 
 # find_package(onnxruntime REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc dnn)
 if(IOS OR APPLE)
   find_library(FOUNDATION Foundation)
   find_library(COREML CoreML)

@@ -2,7 +2,9 @@
 
 #ifdef __APPLE__
 
+#include <objc/message.h>
 #include <objc/runtime.h>
+
 #include <stdio.h>
 
 // Defines the function pointer type for the Objective-C method call.
@@ -25,8 +27,11 @@ void print_message(const char* message) {
 
 	SEL selector = sel_registerName("printMessage:");
 
-	IMP_printMessage imp = (IMP_printMessage)method_getImplementation(class_getClassMethod(pluginClass, selector));
+	// IMP_printMessage imp = (IMP_printMessage)method_getImplementation(class_getClassMethod(pluginClass, selector));
+	// imp(pluginClass, selector, message);
 
+	// ((void (*)(Class, SEL, const char*))objc_msgSend)(pluginClass, selector, message);
+	IMP_printMessage imp = (IMP_printMessage)objc_msgSend;
 	imp(pluginClass, selector, message);
 }
 

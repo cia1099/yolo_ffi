@@ -1,7 +1,7 @@
 #ifndef COREML_YOLO_H
 #define COREML_YOLO_H
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
 #include <vector>
 
 struct MlContainer {

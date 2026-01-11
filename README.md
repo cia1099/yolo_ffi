@@ -48,6 +48,12 @@ set_source_files_properties(
 ```
 `-fobjc-arc` 是 Clang 的编译器选项，强制对该文件使用 ARC。\
 可以针对部分文件启用 ARC，而不影响整个 target。
+* CMake查看`build`文件夹有哪些target可以编译最通用的方法是：
+```
+cmake --build build -- -list
+```
+因为 Xcode 不支持通过 --target help 列出全部 target
+只有用`GNU MakeFiles`或`Ninja`才支持`cmake --build build --target help`
 
 ## Getting Started
 ### Build iOS
@@ -344,7 +350,7 @@ To avoid writing these by hand, they are generated from the header file
 Regenerate the bindings by running `dart run ffigen --config ffigen.yaml`.
 
 
----
+
 
 
 

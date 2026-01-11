@@ -28,7 +28,7 @@ public class YoloFfiPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
      * The `@objc` attribute makes it visible to the Objective-C runtime.
      * The method name must match the one used in `print.cpp`.
      */
-    @objc
+    @objc(printMessage:)
     public static func printMessage(_ message: UnsafePointer<CChar>) {
         // The incoming 'message' might be a wrapper around a C-style char*
         // whose lifetime is not guaranteed across async calls.
