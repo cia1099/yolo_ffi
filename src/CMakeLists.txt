@@ -1,35 +1,74 @@
 # The Flutter tooling requires that developers have CMake 3.10 or later
 # installed. You should not increase this version, as doing so will cause
 # the plugin to fail to compile for some customers of the plugin.
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 
 project(yolo_ffi_library VERSION 1.0.0 LANGUAGES CXX)
+include(FetchContent)
+set(CMAKE_BUILD_TYPE Release)
+
+# MARK:- OpenCV clone from github
+FetchContent_Declare(
+  opencv
+  GIT_REPOSITORY https://github.com/opencv/opencv.git
+  GIT_TAG        4.13.0
+  GIT_SHALLOW    TRUE
+)
+set(CMAKE_CXX_STANDARD 17 CACHE INTERNAL "")
+set(BUILD_LIST "core;imgproc;dnn" CACHE INTERNAL "")
+set(BUILD_JAVA OFF CACHE INTERNAL "")
+set(BUILD_ANDROID_EXAMPLES OFF CACHE INTERNAL "")
+set(BUILD_DOCS OFF CACHE INTERNAL "")
+set(BUILD_opencv_apps OFF CACHE INTERNAL "")
+set(BUILD_opencv_gapi OFF CACHE INTERNAL "")
+set(BUILD_ZLIB OFF CACHE INTERNAL "")
+set(BUILD_OPENJPEG OFF CACHE INTERNAL "")
+set(WITH_JPEG OFF CACHE INTERNAL "")
+set(WITH_PNG OFF CACHE INTERNAL "")
+set(WITH_WEBP OFF CACHE INTERNAL "")
+set(WITH_OPENJPEG OFF CACHE INTERNAL "")
+set(WITH_OPENEXR OFF CACHE INTERNAL "")
+set(WITH_TIFF OFF CACHE INTERNAL "")
+set(WITH_JASPER OFF CACHE INTERNAL "")
+set(WITH_IPP OFF CACHE INTERNAL "")
+set(WITH_TBB OFF CACHE INTERNAL "")
+set(WITH_ITT OFF CACHE INTERNAL "")
+set(WITH_ADE OFF CACHE INTERNAL "")
+set(WITH_CAROTENE OFF CACHE INTERNAL "")
+set(WITH_PROTOBUF OFF CACHE INTERNAL "")
+set(WITH_FLATBUFFERS OFF CACHE INTERNAL "")
+set(WITH_OPENCL OFF CACHE INTERNAL "")
+set(WITH_EIGEN OFF CACHE INTERNAL "")
+set(WITH_CUDA OFF CACHE INTERNAL "")
+set(WITH_AVFOUNDATION OFF CACHE INTERNAL "")
 
 # Set the $LIBRARIES_DIR to point directly to the package config files
 if(ANDROID)
-    # set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../../onnxruntime/android/lib/cmake/onnxruntime)
-    set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../../opencv/android/sdk/native/jni/abi-arm64-v8a)
-    set(ncnn_DIR ${CMAKE_SOURCE_DIR}/../../ncnn/android/lib/cmake/ncnn)
+    set(BUILD_SHARED_LIBS ON CACHE INTERNAL "")
+    # MARK:- NCNN clone from github
+    set(NCNN_VULKAN OFF CACHE BOOL "" FORCE)
+    set(NCNN_AVX OFF CACHE BOOL "" FORCE)
+    set(NCNN_SHARED_LIB ON CACHE BOOL "" FORCE)
+    set(NCNN_BUILD_BENCHMARK OFF CACHE BOOL "" FORCE)
+    FetchContent_Declare(
+      ncnn
+      GIT_REPOSITORY https://github.com/Tencent/ncnn.git
+      GIT_TAG        20250916
+      GIT_SHALLOW    TRUE
+      GIT_SUBMODULES_RECURSE TRUE
+    )
 elseif(APPLE OR IOS)
-  if(CMAKE_OSX_SYSROOT MATCHES "iphonesimulator")
-    set(IOS_DIR sim_ios)
-    # set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../ort/sim_ios/lib/cmake/onnxruntime)
-  else()
-    set(IOS_DIR ios)
-  endif()
-    # set(onnxruntime_DIR ${CMAKE_SOURCE_DIR}/../../onnxruntime/${IOS_DIR}/lib/cmake/onnxruntime)
-    set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../../opencv/${IOS_DIR}/lib/cmake/opencv4)
+  set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
 endif()
 
-# find_package(onnxruntime REQUIRED)
-find_package(OpenCV REQUIRED COMPONENTS core imgproc dnn)
+FetchContent_MakeAvailable(opencv)
 if(IOS OR APPLE)
   find_library(FOUNDATION Foundation)
   find_library(COREML CoreML)
   find_library(COREVIDEO CoreVideo)
   find_library(VISION Vision)
 else()
-  find_package(ncnn REQUIRED)
+  FetchContent_MakeAvailable(ncnn)
 endif()
 
 set(SOURCES
@@ -52,9 +91,23 @@ else()
 endif()
 add_library(yolo_ffi ${LIB_TYPE} ${SOURCES})
 
-# target_include_directories(yolo_ffi PUBLIC ${OpenCV_INCLUDE_DIRS})
-# target_link_libraries(yolo_ffi ${OpenCV_LIBS} onnxruntime::onnxruntime)
-target_link_libraries(yolo_ffi ${OpenCV_LIBS})
+
+# <<<< Debug
+message(STATUS "OpenCV Source: ${opencv_SOURCE_DIR}")
+message(STATUS "OpenCV Binary: ${opencv_BINARY_DIR}")
+message(STATUS "OpenCV Config Dir: ${OPENCV_CONFIG_FILE_INCLUDE_DIR}")
+file(GLOB_RECURSE FOUND_MODULE_HPP "${opencv_BINARY_DIR}/opencv2/opencv_modules.hpp")
+message(STATUS "Real path of modules.hpp: ${FOUND_MODULE_HPP}")
+# <<<<
+
+target_include_directories(yolo_ffi PRIVATE
+  ${opencv_SOURCE_DIR}/include
+  ${opencv_SOURCE_DIR}/modules/core/include
+  ${opencv_SOURCE_DIR}/modules/imgproc/include
+  ${opencv_SOURCE_DIR}/modules/dnn/include
+  ${OPENCV_CONFIG_FILE_INCLUDE_DIR}
+)
+target_link_libraries(yolo_ffi opencv_core opencv_imgproc opencv_dnn)
 if(ANDROID)
   target_link_libraries(yolo_ffi ncnn)
 else()
@@ -82,7 +135,7 @@ if(APPLE OR IOS)
     # XCODE_ATTRIBUTE_DEAD_CODE_STRIPPING "NO"
     # XCODE_ATTRIBUTE_STRIP_STYLE "non-global"
     # XCODE_ATTRIBUTE_STRIP_INSTALLED_PRODUCT "NO"
-    # XCODE_ATTRIBUTE_ENABLE_BITCODE "NO"  # 若 iOS >= 15 可省略
+    # XCODE_ATTRIBUTE_ENABLE_BITCODE "NO"
     # XCODE_ATTRIBUTE_GCC_SYMBOLS_PRIVATE_EXTERN "NO"
   )
   target_include_directories(yolo_ffi PRIVATE ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks)
