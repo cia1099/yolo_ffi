@@ -5,60 +5,61 @@ cmake_minimum_required(VERSION 3.14)
 
 project(yolo_ffi_library VERSION 1.0.0 LANGUAGES CXX)
 include(FetchContent)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 
 # MARK:- OpenCV clone from github
 FetchContent_Declare(
   opencv
   GIT_REPOSITORY https://github.com/opencv/opencv.git
-  GIT_TAG        4.13.0
+  GIT_TAG        4.12.0
   GIT_SHALLOW    TRUE
 )
-set(CMAKE_CXX_STANDARD 17 CACHE INTERNAL "")
-set(BUILD_LIST "core;imgproc;dnn" CACHE INTERNAL "")
-set(BUILD_JAVA OFF CACHE INTERNAL "")
-set(BUILD_ANDROID_EXAMPLES OFF CACHE INTERNAL "")
-set(BUILD_DOCS OFF CACHE INTERNAL "")
-set(BUILD_opencv_apps OFF CACHE INTERNAL "")
-set(BUILD_opencv_gapi OFF CACHE INTERNAL "")
-set(BUILD_ZLIB OFF CACHE INTERNAL "")
-set(BUILD_OPENJPEG OFF CACHE INTERNAL "")
-set(WITH_JPEG OFF CACHE INTERNAL "")
-set(WITH_PNG OFF CACHE INTERNAL "")
-set(WITH_WEBP OFF CACHE INTERNAL "")
-set(WITH_OPENJPEG OFF CACHE INTERNAL "")
-set(WITH_OPENEXR OFF CACHE INTERNAL "")
-set(WITH_TIFF OFF CACHE INTERNAL "")
-set(WITH_JASPER OFF CACHE INTERNAL "")
-set(WITH_IPP OFF CACHE INTERNAL "")
-set(WITH_TBB OFF CACHE INTERNAL "")
-set(WITH_ITT OFF CACHE INTERNAL "")
-set(WITH_ADE OFF CACHE INTERNAL "")
-set(WITH_CAROTENE OFF CACHE INTERNAL "")
-set(WITH_PROTOBUF OFF CACHE INTERNAL "")
-set(WITH_FLATBUFFERS OFF CACHE INTERNAL "")
-set(WITH_OPENCL OFF CACHE INTERNAL "")
-set(WITH_EIGEN OFF CACHE INTERNAL "")
-set(WITH_CUDA OFF CACHE INTERNAL "")
-set(WITH_AVFOUNDATION OFF CACHE INTERNAL "")
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard (>= 17 required)")
+set(BUILD_LIST "core;imgproc;dnn" CACHE STRING "")
+set(BUILD_JAVA OFF CACHE BOOL "")
+set(BUILD_ANDROID_EXAMPLES OFF CACHE BOOL "")
+set(BUILD_DOCS OFF CACHE BOOL "")
+set(BUILD_opencv_apps OFF CACHE BOOL "")
+set(BUILD_opencv_gapi OFF CACHE BOOL "")
+set(BUILD_ZLIB OFF CACHE BOOL "")
+set(BUILD_OPENJPEG OFF CACHE BOOL "")
+set(WITH_JPEG OFF CACHE BOOL "")
+set(WITH_PNG OFF CACHE BOOL "")
+set(WITH_WEBP OFF CACHE BOOL "")
+set(WITH_OPENJPEG OFF CACHE BOOL "")
+set(WITH_OPENEXR OFF CACHE BOOL "")
+set(WITH_TIFF OFF CACHE BOOL "")
+set(WITH_JASPER OFF CACHE BOOL "")
+set(WITH_IPP OFF CACHE BOOL "")
+set(WITH_TBB OFF CACHE BOOL "")
+set(WITH_ITT OFF CACHE BOOL "")
+set(WITH_ADE OFF CACHE BOOL "")
+set(WITH_CAROTENE OFF CACHE BOOL "")
+set(WITH_PROTOBUF OFF CACHE BOOL "")
+set(WITH_FLATBUFFERS OFF CACHE BOOL "")
+set(WITH_OPENCL OFF CACHE BOOL "")
+set(WITH_EIGEN OFF CACHE BOOL "")
+set(WITH_CUDA OFF CACHE BOOL "")
+set(WITH_AVFOUNDATION OFF CACHE BOOL "")
+if(CMAKE_CXX_STANDARD LESS 17)
+  message(FATAL_ERROR "C++17 or newer is required")
+endif()
 
 # Set the $LIBRARIES_DIR to point directly to the package config files
-if(ANDROID)
-    set(BUILD_SHARED_LIBS ON CACHE INTERNAL "")
-    # MARK:- NCNN clone from github
-    set(NCNN_VULKAN OFF CACHE BOOL "" FORCE)
-    set(NCNN_AVX OFF CACHE BOOL "" FORCE)
-    set(NCNN_SHARED_LIB ON CACHE BOOL "" FORCE)
-    set(NCNN_BUILD_BENCHMARK OFF CACHE BOOL "" FORCE)
-    FetchContent_Declare(
-      ncnn
-      GIT_REPOSITORY https://github.com/Tencent/ncnn.git
-      GIT_TAG        20250916
-      GIT_SHALLOW    TRUE
-      GIT_SUBMODULES_RECURSE TRUE
-    )
-elseif(APPLE OR IOS)
-  set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
+if(APPLE OR IOS)
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
+else()
+  set(BUILD_SHARED_LIBS ON CACHE BOOL "")
+  # MARK:- NCNN clone from github
+  set(NCNN_AVX OFF CACHE BOOL "" FORCE)
+  set(NCNN_SHARED_LIB ON CACHE BOOL "" FORCE)
+  FetchContent_Declare(
+    ncnn
+    GIT_REPOSITORY https://github.com/Tencent/ncnn.git
+    GIT_TAG        20250916
+    GIT_SHALLOW    TRUE
+    GIT_SUBMODULES_RECURSE TRUE
+  )
 endif()
 
 FetchContent_MakeAvailable(opencv)
@@ -71,6 +72,7 @@ else()
   FetchContent_MakeAvailable(ncnn)
 endif()
 
+set(HEADERS "yolo_ffi.h;print.h")
 set(SOURCES
   "yolo_ffi.cpp"
   "print.cpp"
@@ -78,45 +80,38 @@ set(SOURCES
   # "onnx_ffi.cpp"
 )
 if(IOS OR APPLE)
-  enable_language(OBJCXX)
   list(APPEND SOURCES "coreml_yolo.mm" "coreml_ffi.mm")
+  list(APPEND HEADERS "coreml_yolo.h")
 else()
   list(APPEND SOURCES "ncnn_yolo.cpp" "ncnn_ffi.cpp")
+  list(APPEND HEADERS "ncnn_yolo.h")
 endif()
 
-if(ANDROID)
-  set(LIB_TYPE SHARED)
-else()
+if(APPLE)
   set(LIB_TYPE STATIC)
+else()
+  set(LIB_TYPE SHARED)
 endif()
 add_library(yolo_ffi ${LIB_TYPE} ${SOURCES})
 
 
-# <<<< Debug
-message(STATUS "OpenCV Source: ${opencv_SOURCE_DIR}")
-message(STATUS "OpenCV Binary: ${opencv_BINARY_DIR}")
-message(STATUS "OpenCV Config Dir: ${OPENCV_CONFIG_FILE_INCLUDE_DIR}")
-file(GLOB_RECURSE FOUND_MODULE_HPP "${opencv_BINARY_DIR}/opencv2/opencv_modules.hpp")
-message(STATUS "Real path of modules.hpp: ${FOUND_MODULE_HPP}")
-# <<<<
+foreach(module ${BUILD_LIST})
+  target_include_directories(yolo_ffi PRIVATE ${opencv_SOURCE_DIR}/modules/${module}/include)
+  target_link_libraries(yolo_ffi opencv_${module})
+endforeach()
 
 target_include_directories(yolo_ffi PRIVATE
   ${opencv_SOURCE_DIR}/include
-  ${opencv_SOURCE_DIR}/modules/core/include
-  ${opencv_SOURCE_DIR}/modules/imgproc/include
-  ${opencv_SOURCE_DIR}/modules/dnn/include
-  ${OPENCV_CONFIG_FILE_INCLUDE_DIR}
+  ${CMAKE_BINARY_DIR}
 )
-target_link_libraries(yolo_ffi opencv_core opencv_imgproc opencv_dnn)
-if(ANDROID)
-  target_link_libraries(yolo_ffi ncnn)
-else()
+
+if(APPLE)
   target_link_libraries(yolo_ffi ${FOUNDATION} ${COREML} ${VISION} ${COREVIDEO})
+else()
+  target_link_libraries(yolo_ffi ncnn)
 endif()
-set_target_properties(yolo_ffi PROPERTIES
-  PUBLIC_HEADER "yolo_ffi.h;print.h"
-  OUTPUT_NAME "yolo_ffi"
-  # CXX_STANDARD 17
+set_property(TARGET yolo_ffi PROPERTY
+  PUBLIC_HEADER ${HEADERS}
 )
 # Used Frameworks to make iOS support multiple Apple devices
 if(APPLE OR IOS)
@@ -138,7 +133,24 @@ if(APPLE OR IOS)
     # XCODE_ATTRIBUTE_ENABLE_BITCODE "NO"
     # XCODE_ATTRIBUTE_GCC_SYMBOLS_PRIVATE_EXTERN "NO"
   )
-  target_include_directories(yolo_ffi PRIVATE ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks)
+  # target_include_directories(yolo_ffi PRIVATE ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks)
+  
+  set(OPENCV_STATIC_LIBS "")
+  foreach(module ${BUILD_LIST})
+    list(APPEND OPENCV_STATIC_LIBS ${opencv_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE}/libopencv_${module}.a)
+  endforeach()
+
+  add_custom_command(
+    TARGET yolo_ffi
+    POST_BUILD
+    COMMAND /usr/bin/libtool
+            -static
+            -o ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}-${CMAKE_OSX_SYSROOT}/libyolo_ffi.a
+            ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}-${CMAKE_OSX_SYSROOT}/libyolo_ffi.a
+            ${OPENCV_STATIC_LIBS}
+    COMMENT "Merging libyolo_ffi.a with OpenCV static libraries"
+    VERBATIM
+  )
 endif()
 
 target_compile_definitions(yolo_ffi PUBLIC DART_SHARED_LIB)
@@ -158,7 +170,7 @@ install(TARGETS yolo_ffi
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/yolo_ffi
 )
 
 install(EXPORT yolo_ffi_export_set
