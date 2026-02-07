@@ -5,14 +5,13 @@ import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 
 class YUV2RGBAConverter {
-  Uint8List? _rgbaBuffer; // 复用内存避免重复分配
+  Uint8List? _rgbaBuffer;
 
   Future<ui.Image> convert(CameraImage image) async {
     final int width = image.width;
     final int height = image.height;
     final int rgbaSize = width * height * 4;
 
-    // 复用 RGBA 内存以提升性能
     _rgbaBuffer ??= Uint8List(rgbaSize);
     final Uint8List rgba = _rgbaBuffer!;
 
