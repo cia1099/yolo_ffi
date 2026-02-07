@@ -6,14 +6,31 @@ cmake_minimum_required(VERSION 3.14)
 project(yolo_ffi_library VERSION 1.0.0 LANGUAGES CXX)
 include(FetchContent)
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+cmake_policy(SET CMP0077 NEW)
+# cmake_policy(SET CMP0177 SILENT)
 
-# MARK:- OpenCV clone from github
 FetchContent_Declare(
   opencv
   GIT_REPOSITORY https://github.com/opencv/opencv.git
   GIT_TAG        4.12.0
   GIT_SHALLOW    TRUE
 )
+
+# Set the SHARED_LIBS for iOS and Android
+if(APPLE OR IOS)
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
+else()
+  set(BUILD_SHARED_LIBS ON CACHE BOOL "")
+  FetchContent_Declare(
+    ncnn
+    GIT_REPOSITORY https://github.com/Tencent/ncnn.git
+    GIT_TAG        20250916
+    GIT_SHALLOW    TRUE
+    GIT_SUBMODULES_RECURSE TRUE
+  )
+endif()
+
+# MARK:- OpenCV configuration
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard (>= 17 required)")
 set(BUILD_LIST "core;imgproc;dnn" CACHE STRING "")
 set(BUILD_JAVA OFF CACHE BOOL "")
@@ -44,24 +61,6 @@ set(WITH_AVFOUNDATION OFF CACHE BOOL "")
 if(CMAKE_CXX_STANDARD LESS 17)
   message(FATAL_ERROR "C++17 or newer is required")
 endif()
-
-# Set the $LIBRARIES_DIR to point directly to the package config files
-if(APPLE OR IOS)
-  set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
-else()
-  set(BUILD_SHARED_LIBS ON CACHE BOOL "")
-  # MARK:- NCNN clone from github
-  set(NCNN_AVX OFF CACHE BOOL "" FORCE)
-  set(NCNN_SHARED_LIB ON CACHE BOOL "" FORCE)
-  FetchContent_Declare(
-    ncnn
-    GIT_REPOSITORY https://github.com/Tencent/ncnn.git
-    GIT_TAG        20250916
-    GIT_SHALLOW    TRUE
-    GIT_SUBMODULES_RECURSE TRUE
-  )
-endif()
-
 FetchContent_MakeAvailable(opencv)
 if(IOS OR APPLE)
   find_library(FOUNDATION Foundation)
@@ -69,6 +68,9 @@ if(IOS OR APPLE)
   find_library(COREVIDEO CoreVideo)
   find_library(VISION Vision)
 else()
+# MARK:- ncnn configuration
+  set(NCNN_AVX OFF CACHE BOOL "" FORCE)
+  set(NCNN_SHARED_LIB ON CACHE BOOL "" FORCE)
   FetchContent_MakeAvailable(ncnn)
 endif()
 
