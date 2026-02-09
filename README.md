@@ -43,7 +43,7 @@ android {
 }
 ```
 * `example/android/app/build.gradle.kts`
-```kts
+```gradle
 android {
     ndkVersion = "<your_ndk_version>"
     defaultConfig {
@@ -67,7 +67,7 @@ sudo ln -s $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager /usr/local/bin
 ---
 
 ## Asset Configuration
-Update the asset paths in pubspec.yaml according to your target platform:
+Update the asset paths in `pubspec.yaml` according to your target platform:
 ```yaml
 assets:
 #ios
@@ -91,3 +91,14 @@ cd example
 flutter pub get
 flutter run -d <device_id>
 ```
+
+---
+# Buy Me A Coffee
+
+<a href="https://www.buymeacoffee.com/cia1099" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+<a href="https://ko-fi.com/cia1099" target="_blank"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeccT1LUVKmhw2m4zv8fXN8G_bNRaCCYh3sA&s" alt="Ko-fi Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+<a href="https://paypal.me/cia1099" target="_blank"><img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-150px.png" alt="Pay pal Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+# Sponsors
